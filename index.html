@@ -394,3 +394,46 @@
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Steamvault</title>
+    <style>body{background:#0f172a; color:white; font-family:sans-serif; padding:20px;}</style>
+</head>
+<body>
+    <h2>System Debugger</h2>
+    <div id="status">جاري الاتصال بالسحابة...</div>
+    <button onclick="testUpload()">تجربة رفع حساب تجريبي</button>
+
+    <script>
+        const BIN_ID = "69b45de7aa77b81da9e13d8e"; 
+        const MASTER_KEY = "$2a$10$J7Z/r.is/jh/sMCRDhBS5uNsWhpJAjtrNkqGkMi1wv2Paq2Ux4GuW";
+
+        async function testUpload() {
+            document.getElementById('status').innerText = "جاري المحاولة...";
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": MASTER_KEY
+                    },
+                    body: JSON.stringify({
+                        cards: [{ username: "TEST_USER", password: "123", description: "Test" }],
+                        admins: ["Blue_lock1"],
+                        headAdmins: ["21640800"]
+                    })
+                });
+                const result = await response.json();
+                if(result.record) {
+                    document.getElementById('status').innerText = "تم الرفع بنجاح! السحابة تعمل.";
+                } else {
+                    document.getElementById('status').innerText = "خطأ في الرفع: " + JSON.stringify(result);
+                }
+            } catch (err) {
+                document.getElementById('status').innerText = "خطأ في الاتصال: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
