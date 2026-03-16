@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steamvault Cloud PRO</title>
     <style>
-        /* ========== STYLES ========== */
+        /* ... (keep all existing styles) ... */
         * {
             margin: 0;
             padding: 0;
@@ -98,6 +98,23 @@
         #adblockOverlay h2 {
             color: var(--danger);
             margin-bottom: 20px;
+        }
+
+        /* Banner ad placeholder */
+        .ad-banner {
+            width: 100%;
+            min-height: 90px;
+            background: var(--secondary-light);
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+        }
+        .ad-banner iframe, .ad-banner div {
+            max-width: 100%;
         }
 
         /* Login Screen */
@@ -604,6 +621,12 @@
         </div>
     </div>
 
+    <!-- Banner Ad Placeholder (you can replace with actual ad code) -->
+    <div class="ad-banner" id="adBanner">
+        <!-- Monetag banner code can go here -->
+        <div style="color: var(--text-secondary);">Advertisement</div>
+    </div>
+
     <div class="header">
         <div class="title">
             <span id="appTitle">Steamvault</span>
@@ -687,7 +710,8 @@
             cooldownMessage: "Too many failed attempts. Please wait {minutes} minutes.",
             forceLogoutAll: "Force Logout All",
             activeSessions: "Active Guest Sessions",
-            sessionRevoked: "Your session was revoked by an admin."
+            sessionRevoked: "Your session was revoked by an admin.",
+            adFailed: "Ad service unavailable. Please disable ad blocker or try again later."
         },
         ar: {
             loginTitle: "ستيم فولت كلاود",
@@ -721,25 +745,34 @@
             cooldownMessage: "محاولات فاشلة كثيرة. الرجاء الانتظار {minutes} دقائق.",
             forceLogoutAll: "تسجيل خروج الجميع",
             activeSessions: "الجلسات النشطة",
-            sessionRevoked: "تم إلغاء جلستك بواسطة المشرف."
+            sessionRevoked: "تم إلغاء جلستك بواسطة المشرف.",
+            adFailed: "خدمة الإعلانات غير متاحة. الرجاء تعطيل مانع الإعلانات أو المحاولة لاحقاً."
         }
     };
     let currentLang = 'en';
 
-    // ==================== ADBLOCK DETECTION (STRICT) ====================
+    // ==================== ADBLOCK DETECTION (IMPROVED) ====================
     function detectAdBlockStrict() {
+        // Method 1: CSS-based detection
         const test = document.createElement('div');
         test.className = 'adsbox';
         test.style.height = '1px';
         document.body.appendChild(test);
         setTimeout(() => {
             if (test.offsetHeight === 0) {
-                // Adblock detected – block entire page
+                // Adblock detected – block page
                 document.getElementById('adblockOverlay').style.display = 'flex';
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'none';
             } else {
-                document.getElementById('adblockOverlay').style.display = 'none';
+                // Method 2: Check if Monetag script loaded (by trying to fetch a resource from the same domain)
+                fetch('https://quge5.com/88/tag.min.js', { method: 'HEAD', mode: 'no-cors' })
+                    .catch(() => {
+                        // If fetch fails, assume adblock
+                        document.getElementById('adblockOverlay').style.display = 'flex';
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('mainApp').style.display = 'none';
+                    });
             }
             test.remove();
         }, 100);
@@ -788,7 +821,7 @@
     };
 
     // ==================== SESSION MANAGEMENT ====================
-    let globalSessionId = 0; // will be loaded from JSONBin
+    let globalSessionId = 0;
 
     async function loadGlobalSessionId() {
         try {
@@ -803,7 +836,6 @@
 
     async function incrementGlobalSessionId() {
         globalSessionId++;
-        // Save to JSONBin (merge with existing data)
         try {
             const latest = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}/latest`, {
                 headers: { "X-Master-Key": CONFIG.MASTER_KEY }
@@ -819,7 +851,6 @@
         }
     }
 
-    // Check if current guest session is still valid
     async function checkSessionValidity() {
         if (currentUser.role !== 'User') return true;
         await loadGlobalSessionId();
@@ -850,28 +881,38 @@
     let syncInProgress = false;
     let filteredCards = [];
 
-    // ==================== LANGUAGE FUNCTIONS ====================
+    // ==================== LANGUAGE FUNCTIONS (FIXED) ====================
     function updateTexts() {
         const t = translations[currentLang];
-        document.getElementById('loginTitle').innerText = t.loginTitle;
-        document.getElementById('loginSubtitle').innerText = t.loginSubtitle;
-        document.getElementById('adminLoginBtnText').innerText = t.adminLoginBtn;
-        document.getElementById('guestLoginBtnText').innerText = t.guestLoginBtn;
-        document.getElementById('discordBtn').innerText = t.discordBtn;
-        document.getElementById('statAccounts').innerText = t.statAccounts;
-        document.getElementById('statRole').innerText = t.statRole;
-        document.getElementById('statLastSync').innerText = t.statLastSync;
-        document.getElementById('appTitle').innerText = t.appTitle;
-        document.getElementById('logoutText').innerText = t.logoutText;
-        document.getElementById('searchInput').placeholder = t.searchPlaceholder;
-        document.getElementById('addBtn').innerHTML = t.addAccount;
-        document.getElementById('manageBtn').innerHTML = t.manageKeys;
-        // Session card
+        safeSetText('loginTitle', t.loginTitle);
+        safeSetText('loginSubtitle', t.loginSubtitle);
+        safeSetText('adminLoginBtnText', t.adminLoginBtn);
+        safeSetText('guestLoginBtnText', t.guestLoginBtn);
+        safeSetText('discordBtn', t.discordBtn);
+        safeSetText('statAccounts', t.statAccounts);
+        safeSetText('statRole', t.statRole);
+        safeSetText('statLastSync', t.statLastSync);
+        safeSetText('appTitle', t.appTitle);
+        safeSetText('logoutText', t.logoutText);
+        safeSetPlaceholder('searchInput', t.searchPlaceholder);
+        safeSetText('addBtn', t.addAccount);
+        safeSetText('manageBtn', t.manageKeys);
         const sessionCard = document.getElementById('sessionCard');
         if (sessionCard) {
-            sessionCard.querySelector('small').innerText = t.activeSessions;
-            sessionCard.querySelector('button').innerText = t.forceLogoutAll;
+            const small = sessionCard.querySelector('small');
+            if (small) small.innerText = t.activeSessions;
+            const button = sessionCard.querySelector('button');
+            if (button) button.innerText = t.forceLogoutAll;
         }
+    }
+
+    function safeSetText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    }
+    function safeSetPlaceholder(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.placeholder = text;
     }
 
     document.getElementById('langSelect').addEventListener('change', (e) => {
@@ -900,7 +941,7 @@
     setInterval(() => {
         if (currentUser.role === "User") {
             checkUserSession();
-            checkSessionValidity(); // also check global session
+            checkSessionValidity();
         }
     }, 60000);
 
@@ -978,7 +1019,7 @@
                 admins: state.admins,
                 headAdmins: state.headAdmins,
                 activeCodes: latest.activeCodes || {},
-                globalSessionId: state.globalSessionId // keep our value
+                globalSessionId: state.globalSessionId
             };
 
             const res = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}`, {
