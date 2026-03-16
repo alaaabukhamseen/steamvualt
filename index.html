@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Monetag Ad Script -->
+    <script src="https://quge5.com/88/tag.min.js" data-zone="219804" async data-cfasync="false"></script>
+
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -1062,9 +1065,6 @@
         const sessionCard = document.getElementById('sessionCard');
         if (currentUser.role === 'HeadAdmin') {
             sessionCard.style.display = 'block';
-            // Count active guest sessions (based on local storage? Not reliable)
-            // Instead, we can show the current global session ID and a button to increment.
-            // For simplicity, we'll just show the global session ID as "active sessions" counter.
             document.getElementById('activeSessions').innerText = state.globalSessionId;
         } else {
             sessionCard.style.display = 'none';
@@ -1073,7 +1073,6 @@
 
     // ==================== LOGIN FUNCTIONS ====================
     function openAdminLogin() {
-        // Check rate limit
         const check = rateLimit.check('admin');
         if (!check.allowed) {
             const msg = translations[currentLang].cooldownMessage.replace('{minutes}', check.minutes);
@@ -1095,7 +1094,6 @@
     }
 
     function openGuestLogin() {
-        // Check rate limit
         const check = rateLimit.check('guest');
         if (!check.allowed) {
             const msg = translations[currentLang].cooldownMessage.replace('{minutes}', check.minutes);
@@ -1166,7 +1164,6 @@
             rateLimit.reset('guest');
             currentUser = { role: "User", key: code };
             userLoginTime = Date.now();
-            // Store current global session ID for this guest
             localStorage.setItem('guestSessionId', globalSessionId);
             enableApp(false);
             closePop();
@@ -1181,7 +1178,6 @@
         document.getElementById('mainApp').style.display = 'flex';
         document.getElementById('dash').style.display = "grid";
         document.getElementById('logoutBtn').style.display = "inline-flex";
-        // Show/hide admin buttons
         if (currentUser.role === "Admin" || currentUser.role === "HeadAdmin") {
             document.getElementById('addBtn').style.display = "inline-flex";
             if (isHead) {
@@ -1210,7 +1206,6 @@
         closePop();
     }
 
-    // Force logout all guests by incrementing global session ID
     async function forceLogoutAllGuests() {
         if (currentUser.role !== 'HeadAdmin') return;
         if (!confirm('Are you sure you want to log out all guests?')) return;
@@ -1227,7 +1222,6 @@
             return;
         }
         if (checkUserSession()) return;
-        // For guests, also check global session validity
         if (currentUser.role === 'User') {
             checkSessionValidity().then(valid => { if (!valid) return; });
         }
@@ -1475,7 +1469,7 @@
 
     // ==================== INIT ====================
     document.addEventListener('DOMContentLoaded', () => {
-        detectAdBlockStrict(); // Now blocks access if adblock is on
+        detectAdBlockStrict();
         fetchCloud().then(() => loadGlobalSessionId());
         setInterval(fetchCloud, 30000);
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.getElementById('overlay').style.display === 'flex') closePop(); });
