@@ -1,221 +1,1277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://quge5.com/88/tag.min.js" data-zone="219804" async data-cfasync="false"></script>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
-    <title>Steamvault Cloud PRO - Management Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steamvault Cloud PRO</title>
     <style>
-        :root {
-            --primary: #00f7ff;
-            --secondary: #0f172a;
-            --success: #22c55e;
-            --danger: #ff5c5c;
-            --warning: #f59e0b;
-            --bg-dark: #05070f;
-            --head: #ffcc00;
-            --discord: #5865F2;
+        /* ========== STYLES (same as before) ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        body { margin:0; background: linear-gradient(135deg, #0b0f1a, var(--bg-dark)); font-family: 'Segoe UI', Tahoma, sans-serif; color: white; min-height: 100vh; }
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 25px; background: var(--secondary); border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 100; }
-        .title { font-size: 24px; color: var(--primary); font-weight: bold; }
-        .dashboard { display: none; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; padding: 15px 20px; background: #1e293b; }
-        .stat-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center; border-left: 4px solid var(--primary); }
-        .btn-group { display: flex; gap: 8px; align-items: center; }
-        .btn { border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn:hover { opacity: 0.8; transform: scale(1.02); }
-        .btn-admin { background: var(--primary); color: #000; }
-        .btn-add { background: var(--success); color: white; display: none; }
-        .btn-manage { background: var(--danger); color: white; display: none; }
-        .btn-discord { background: var(--discord); color: white; text-decoration: none; display: inline-flex; align-items: center; font-size: 14px; padding: 10px 16px; border-radius: 6px; }
-        .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; padding: 25px; }
-        .card { background: var(--secondary); border-radius: 12px; padding: 12px; cursor: pointer; transition: .3s; border: 1px solid #1e293b; text-align: center; }
-        .card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0, 247, 255, 0.2); border-color: var(--primary); }
-        .card img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
-        .popup { background: var(--secondary); padding: 25px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; border: 1px solid #334155; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; box-sizing: border-box; }
-        .copy-row { display: flex; align-items: center; justify-content: space-between; background: #1e293b; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
-        .key-manager { margin-top: 15px; padding-top: 15px; border-top: 1px solid #334155; }
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 10px; }
-        .badge-live { background: var(--success); }
+        :root {
+            --primary: #00f7ff;
+            --primary-dark: #00c4cc;
+            --secondary: #0f172a;
+            --secondary-light: #1e293b;
+            --success: #22c55e;
+            --success-dark: #16a34a;
+            --danger: #ff5c5c;
+            --danger-dark: #dc2626;
+            --warning: #f59e0b;
+            --bg-dark: #05070f;
+            --bg-card: #0b0f1a;
+            --head: #ffcc00;
+            --discord: #5865F2;
+            --discord-dark: #4752C4;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --card-bg: var(--secondary);
+            --header-bg: var(--secondary);
+            --input-bg: var(--secondary-light);
+        }
+
+        body.light-theme {
+            --primary: #0066cc;
+            --primary-dark: #004999;
+            --secondary: #f0f4f8;
+            --secondary-light: #ffffff;
+            --success: #2e7d32;
+            --success-dark: #1b5e20;
+            --danger: #c62828;
+            --danger-dark: #8e0000;
+            --warning: #f9a825;
+            --bg-dark: #e1e9f0;
+            --bg-card: #ffffff;
+            --head: #ffb300;
+            --discord: #5865F2;
+            --discord-dark: #404e9c;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --border-color: #cbd5e1;
+            --card-bg: #ffffff;
+            --header-bg: #ffffff;
+            --input-bg: #f1f5f9;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0b0f1a, var(--bg-dark));
+            font-family: 'Segoe UI', Tahoma, system-ui, sans-serif;
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        #adblockWarning {
+            background: var(--danger);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+            display: none;
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0b0f1a, #010101);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(10px);
+        }
+        .login-container {
+            background: var(--secondary);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0,247,255,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .login-container h1 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+        .login-container p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .login-btn.admin {
+            background: var(--primary);
+            color: #000;
+        }
+        .login-btn.admin:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 0 20px var(--primary);
+        }
+        .login-btn.guest {
+            background: var(--success);
+            color: white;
+        }
+        .login-btn.guest:hover {
+            background: var(--success-dark);
+            box-shadow: 0 0 20px var(--success);
+        }
+        .login-btn.discord {
+            background: var(--discord);
+            color: white;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .login-btn.discord:hover {
+            background: var(--discord-dark);
+        }
+
+        /* Main App */
+        #mainApp {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 25px;
+            background: var(--header-bg);
+            border-bottom: 2px solid var(--primary);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .title {
+            font-size: 24px;
+            color: var(--primary);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dashboard {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--secondary-light);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .stat-card small {
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-card span {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-admin {
+            background: var(--primary);
+            color: #000;
+        }
+        .btn-admin:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 0 15px rgba(0,247,255,0.3);
+        }
+        .btn-add {
+            background: var(--success);
+            color: white;
+            display: none;
+        }
+        .btn-manage {
+            background: var(--danger);
+            color: white;
+            display: none;
+        }
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        /* Search */
+        .search-container {
+            padding: 15px 25px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        /* Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+            padding: 25px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(0,247,255,0.2);
+            border-color: var(--primary);
+        }
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+        .card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--secondary-light), var(--secondary));
+        }
+        .card .games {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0 5px;
+            color: var(--primary);
+            word-break: break-word;
+        }
+        .card .category-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 5px 2px;
+        }
+        .card .category-steam { background: #1b2838; color: white; }
+        .card .category-xbox { background: #107c10; color: white; }
+        .card .category-epic { background: #2a2a2a; color: white; border: 1px solid #f0f0f0; }
+        .card .health-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+        .health-good { background: var(--success); }
+        .health-suspected { background: var(--danger); }
+
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, var(--border-color) 25%, var(--secondary-light) 50%, var(--border-color) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+            height: 160px;
+            margin-bottom: 10px;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Popup */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            backdrop-filter: blur(5px);
+        }
+        .popup {
+            background: var(--secondary);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0 15px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .password-row {
+            display: flex;
+            align-items: center;
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .password-row input {
+            flex: 1;
+            border: none;
+            margin: 0;
+            background: transparent;
+        }
+        .password-row .btn-icon {
+            padding: 0 12px;
+            font-size: 20px;
+        }
+
+        .copy-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--secondary-light);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .copy-row span {
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin-right: 10px;
+        }
+        .copy-row .btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: var(--success);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .key-manager {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+        .key-manager h4 {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+        .key-list {
+            background: #000000;
+            padding: 12px;
+            border-radius: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            margin: 4px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .key-item button {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .badge-live {
+            background: var(--success);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        #timer {
+            color: var(--danger);
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .lang-selector, .theme-toggle {
+            background: var(--secondary-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 15px; }
+            .btn-group { width: 100%; justify-content: center; }
+            .cards { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
+        }
     </style>
 </head>
 <body>
 
-<div class="dashboard" id="dash">
-    <div class="stat-card"><small>Cloud Accounts</small><br><span id="countAcc">0</span></div>
-    <div class="stat-card"><small>Current Role</small><br><span id="roleDisplay">Guest</span></div>
-</div>
+<div id="adblockWarning">⚠️ Ad blocker detected. Please disable it to support us. Thanks!</div>
 
-<div class="header">
-    <div class="title">Steamvault <span class="badge badge-live">LIVE CLOUD - V3</span></div>
-    <div class="btn-group">
-        <a href="https://discord.gg/nqHyAEqJsn" target="_blank" class="btn btn-discord">Discord Server</a>
-        <button class="btn btn-manage" id="manageBtn" onclick="openKeyManager()">Manage All Keys</button>
-        <button class="btn btn-add" id="addBtn" onclick="openAddCard()">+ Add Account</button>
-        <button class="btn btn-admin" id="loginBtn" onclick="systemLogin()">Login</button>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+    <div class="login-container">
+        <h1 id="loginTitle">Steamvault Cloud</h1>
+        <p id="loginSubtitle">Please log in to access the cloud</p>
+        <button class="login-btn admin" onclick="openAdminLogin()">
+            <span id="adminLoginBtn">🔑 Admin Login</span>
+        </button>
+        <button class="login-btn guest" onclick="openGuestLogin()">
+            <span id="guestLoginBtn">👤 Guest Login</span>
+        </button>
+        <a href="https://discord.gg/nqHyAEqJsn" target="_blank" class="login-btn discord">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.33-.35-.76-.54-1.09c-.01-.02-.04-.03-.07-.03c-1.5.26-2.93.71-4.27 1.33c-.01 0-.02.01-.03.02c-2.72 4.07-3.47 8.03-3.1 11.95c0 .02.01.04.03.05c1.8 1.32 3.53 2.12 5.23 2.65c.03.01.06 0 .07-.02c.4-.55.76-1.13 1.07-1.74c.02-.04 0-.08-.04-.09c-.57-.22-1.11-.48-1.64-.78c-.04-.02-.04-.08-.01-.11c.11-.08.22-.17.33-.25c.02-.02.05-.02.07-.01c3.44 1.57 7.15 1.57 10.55 0c.02-.01.05-.01.07.01c.11.09.22.17.33.26c.03.02.03.08-.01.11c-.52.31-1.07.56-1.64.78c-.04.01-.05.06-.04.09c.32.61.68 1.19 1.07 1.74c.03.01.06.02.09.01c1.72-.53 3.45-1.33 5.25-2.65c.02-.01.03-.03.03-.05c.44-4.53-.73-8.46-3.1-11.95c-.01-.01-.02-.02-.04-.02zM8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.83 2.12-1.89 2.12z"/>
+            </svg>
+            <span id="discordBtn">Join Discord</span>
+        </a>
     </div>
 </div>
 
-<div class="cards" id="container"></div>
+<!-- MAIN APP -->
+<div id="mainApp">
+    <div class="dashboard" id="dash">
+        <div class="stat-card">
+            <small id="statAccounts">Cloud Accounts</small>
+            <span id="countAcc">0</span>
+        </div>
+        <div class="stat-card">
+            <small id="statRole">Current Role</small>
+            <span id="roleDisplay">Guest</span>
+        </div>
+        <div class="stat-card">
+            <small id="statLastSync">Last Sync</small>
+            <span id="lastSync">-</span>
+        </div>
+    </div>
 
-<div class="overlay" id="overlay"><div class="popup" id="popup"></div></div>
+    <div class="header">
+        <div class="title">
+            <span id="appTitle">Steamvault</span>
+            <span class="badge-live">LIVE CLOUD - V3</span>
+        </div>
+        <div class="btn-group">
+            <select id="langSelect" class="lang-selector">
+                <option value="en">🇬🇧 English</option>
+                <option value="ar">🇸🇦 العربية</option>
+            </select>
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌓 Theme</button>
+            <!-- Admin buttons (hidden by default) -->
+            <button class="btn btn-add" id="addBtn" style="display:none;" onclick="openAddCard()">➕ Add Account</button>
+            <button class="btn btn-manage" id="manageBtn" style="display:none;" onclick="openKeyManager()">🔑 Manage Keys</button>
+            <button class="btn btn-admin" id="logoutBtn" style="display:none;" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="🔍 Search by games or username..." oninput="filterCards()">
+    </div>
+
+    <div class="cards" id="container">
+        <!-- Skeletons will be inserted here -->
+    </div>
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="popup" id="popup"></div>
+</div>
 
 <script>
-    const BIN_ID = "69b45de7aa77b81da9e13d8e"; 
-    const MASTER_KEY = "$2a$10$J7Z/r.is/jh/sMCRDhBS5uNsWhpJAjtrNkqGkMi1wv2Paq2Ux4GuW";
-    let state = { cards: [], admins: ["Blue_lock1"], headAdmins: ["21640800"] };
-    let currentUserRole = "Guest";
-    let tempImg = "";
+    // ==================== CONFIGURATION ====================
+    const CONFIG = {
+        BIN_ID: "69b45de7aa77b81da9e13d8e",
+        MASTER_KEY: "$2a$10$J7Z/r.is/jh/sMCRDhBS5uNsWhpJAjtrNkqGkMi1wv2Paq2Ux4GuW",
+        API_URL: "https://api.jsonbin.io/v3",
+        TIMEOUT: 30000,
+        VERIFICATION_TIMER: 30,
+        USER_SESSION_HOURS: 24,
+        DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/your_webhook_id/your_webhook_token", // Replace with your webhook
+        CATEGORIES: ["Steam", "Xbox", "Epic Games"]
+    };
 
+    // ==================== MULTI-LANGUAGE SUPPORT ====================
+    const translations = {
+        en: {
+            loginTitle: "Steamvault Cloud",
+            loginSubtitle: "Please log in to access the cloud",
+            adminLoginBtn: "🔑 Admin Login",
+            guestLoginBtn: "👤 Guest Login",
+            discordBtn: "Join Discord",
+            statAccounts: "Cloud Accounts",
+            statRole: "Current Role",
+            statLastSync: "Last Sync",
+            appTitle: "Steamvault",
+            logoutText: "Logout",
+            searchPlaceholder: "🔍 Search by games or username...",
+            addAccount: "➕ Add Account",
+            manageKeys: "🔑 Manage Keys",
+            close: "Close",
+            cancel: "Cancel",
+            upload: "Upload",
+            delete: "Delete",
+            copy: "Copy",
+            username: "Username",
+            password: "Password",
+            description: "Games",
+            category: "Category",
+            healthGood: "Good",
+            healthSuspected: "Suspected",
+            viewCount: "Views",
+            decrypting: "🔒 Decrypting...",
+            seconds: "s",
+            adblockWarning: "⚠️ Ad blocker detected. Please disable it to support us. Thanks!"
+        },
+        ar: {
+            loginTitle: "ستيم فولت كلاود",
+            loginSubtitle: "الرجاء تسجيل الدخول للوصول إلى السحابة",
+            adminLoginBtn: "🔑 دخول المشرف",
+            guestLoginBtn: "👤 دخول الضيف",
+            discordBtn: "انضم إلى ديسكورد",
+            statAccounts: "الحسابات",
+            statRole: "الصلاحية",
+            statLastSync: "آخر تحديث",
+            appTitle: "ستيم فولت",
+            logoutText: "تسجيل خروج",
+            searchPlaceholder: "🔍 ابحث عن الألعاب أو اسم المستخدم...",
+            addAccount: "➕ إضافة حساب",
+            manageKeys: "🔑 إدارة المفاتيح",
+            close: "إغلاق",
+            cancel: "إلغاء",
+            upload: "رفع",
+            delete: "حذف",
+            copy: "نسخ",
+            username: "اسم المستخدم",
+            password: "كلمة المرور",
+            description: "الألعاب",
+            category: "الفئة",
+            healthGood: "جيد",
+            healthSuspected: "مشتبه به",
+            viewCount: "مشاهدات",
+            decrypting: "🔒 جاري فك التشفير...",
+            seconds: "ث",
+            adblockWarning: "⚠️ تم اكتشاف مانع إعلانات. الرجاء تعطيله لدعمنا. شكراً!"
+        }
+    };
+    let currentLang = 'en';
+
+    // ==================== ADBLOCK DETECTION ====================
+    function detectAdBlock() {
+        const test = document.createElement('div');
+        test.className = 'adsbox';
+        test.style.height = '1px';
+        document.body.appendChild(test);
+        setTimeout(() => {
+            if (test.offsetHeight === 0) {
+                document.getElementById('adblockWarning').style.display = 'block';
+                updateTexts();
+            }
+            test.remove();
+        }, 100);
+    }
+
+    // ==================== STATE ====================
+    let state = {
+        cards: [],
+        admins: ["Blue_lock1"],
+        headAdmins: ["21640800"],
+        activeCodes: {},
+        lastUpdated: null
+    };
+    let currentUser = {
+        role: "Guest", // Guest, User, Admin, HeadAdmin
+        key: null
+    };
+    let userLoginTime = null;
+    let tempImage = null;
+    let syncInProgress = false;
+    let filteredCards = [];
+
+    // ==================== LANGUAGE FUNCTIONS ====================
+    function updateTexts() {
+        const t = translations[currentLang];
+        document.getElementById('loginTitle').innerText = t.loginTitle;
+        document.getElementById('loginSubtitle').innerText = t.loginSubtitle;
+        document.getElementById('adminLoginBtn').innerText = t.adminLoginBtn;
+        document.getElementById('guestLoginBtn').innerText = t.guestLoginBtn;
+        document.getElementById('discordBtn').innerText = t.discordBtn;
+        document.getElementById('statAccounts').innerText = t.statAccounts;
+        document.getElementById('statRole').innerText = t.statRole;
+        document.getElementById('statLastSync').innerText = t.statLastSync;
+        document.getElementById('appTitle').innerText = t.appTitle;
+        document.getElementById('logoutText').innerText = t.logoutText;
+        document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+        document.getElementById('adblockWarning').innerText = t.adblockWarning;
+        // Update dynamic button texts (they are already in HTML but we keep them updated)
+        document.getElementById('addBtn').innerHTML = t.addAccount;
+        document.getElementById('manageBtn').innerHTML = t.manageKeys;
+    }
+
+    document.getElementById('langSelect').addEventListener('change', (e) => {
+        currentLang = e.target.value;
+        updateTexts();
+    });
+
+    // ==================== THEME TOGGLE ====================
+    function toggleTheme() {
+        document.body.classList.toggle('light-theme');
+    }
+
+    // ==================== SESSION CHECK ====================
+    function checkUserSession() {
+        if (currentUser.role === "User" && userLoginTime) {
+            const elapsed = Date.now() - userLoginTime;
+            const maxAge = CONFIG.USER_SESSION_HOURS * 60 * 60 * 1000;
+            if (elapsed > maxAge) {
+                alert(translations[currentLang].sessionExpired || "Your 24‑hour session has expired. Please log in again.");
+                logout();
+                return true;
+            }
+        }
+        return false;
+    }
+    setInterval(() => {
+        if (currentUser.role === "User") checkUserSession();
+    }, 60000);
+
+    // ==================== API FUNCTIONS ====================
     async function fetchCloud() {
+        showSkeletons();
+
         try {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest?t=${new Date().getTime()}`, {
-                headers: { "X-Master-Key": MASTER_KEY, "Cache-Control": "no-cache" }
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+            const res = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}/latest?t=${Date.now()}`, {
+                headers: { "X-Master-Key": CONFIG.MASTER_KEY, "Cache-Control": "no-cache" },
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
-            state = data.record;
-            if(!state.admins) state.admins = ["Blue_lock1"];
-            if(!state.headAdmins) state.headAdmins = ["21640800"];
-            render();
-        } catch (e) { console.error("Syncing Failed..."); }
-    }
 
-    async function syncCloud() {
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: { "Content-Type": "application/json", "X-Master-Key": MASTER_KEY },
-            body: JSON.stringify(state)
-        });
-        if(res.ok) { fetchCloud(); } else { alert("Sync Failed! Check Key."); }
-    }
+            const cards = (data.record.cards || []).map(c => ({
+                ...c,
+                category: c.category || "Steam",
+                health: c.health || "Good",
+                views: c.views || 0
+            }));
 
-    function render() {
-        const container = document.getElementById('container');
-        container.innerHTML = state.cards.length === 0 ? '<p style="text-align:center;width:100%">Empty Cloud.</p>' : '';
-        state.cards.forEach((c, i) => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `<img src="${c.image || 'https://via.placeholder.com/150'}"><h3>${c.username}</h3><small style="color:var(--primary)">Click to View</small>`;
-            div.onclick = () => openCardDetails(i);
-            container.appendChild(div);
-        });
-        document.getElementById('countAcc').innerText = state.cards.length;
-    }
+            state = {
+                cards,
+                admins: data.record.admins || ["Blue_lock1"],
+                headAdmins: data.record.headAdmins || ["21640800"],
+                activeCodes: data.record.activeCodes || {},
+                lastUpdated: new Date().toISOString()
+            };
 
-    function systemLogin() {
-        let key = prompt("Enter Secret Key:");
-        if (!key) return;
-        if (state.headAdmins.includes(key)) { currentUserRole = "HeadAdmin"; enableAdminUI(true); }
-        else if (state.admins.includes(key)) { currentUserRole = "Admin"; enableAdminUI(false); }
-        else { alert("Invalid Key!"); }
-    }
-
-    function enableAdminUI(isHead) {
-        document.getElementById('addBtn').style.display = "block";
-        document.getElementById('dash').style.display = "grid";
-        document.getElementById('loginBtn').style.display = "none";
-        document.getElementById('roleDisplay').innerText = currentUserRole;
-        if (isHead) document.getElementById('manageBtn').style.display = "block";
-        render();
-    }
-
-    function openCardDetails(i) {
-        const c = state.cards[i];
-        document.getElementById('popup').innerHTML = `
-            <img src="${c.image || ''}" style="width:100%; border-radius:10px;">
-            <h2>${c.username}</h2>
-            <p>${c.description || 'No description provided.'}</p>
-            <div id="wait-area" class="stat-card" style="border:none; background:#0b0f1a; margin-top:10px;">Decrypting... <span id="timer" style="color:var(--danger); font-weight:bold;">30</span>s</div>
-            <div id="secret-area" style="display:none">
-                <div class="copy-row"><span>User: ${c.username}</span><button class="btn" style="background:var(--success)" onclick="copy('${c.username}')">Copy</button></div>
-                <div class="copy-row"><span>Pass: ${c.password}</span><button class="btn" style="background:var(--success)" onclick="copy('${c.password}')">Copy</button></div>
-                ${(currentUserRole === "Admin" || currentUserRole === "HeadAdmin") ? `<button class="btn" style="background:var(--danger); width:100%;" onclick="deleteCard(${i})">Delete From Cloud</button>` : ''}
-            </div>
-            <button class="btn" style="width:100%; margin-top:15px; background:#475569" onclick="closePop()">Close</button>`;
-        showPop();
-        if (currentUserRole === "Admin" || currentUserRole === "HeadAdmin") {
-            document.getElementById('wait-area').style.display = "none";
-            document.getElementById('secret-area').style.display = "block";
-        } else {
-            let t = 30;
-            let itv = setInterval(() => {
-                t--;
-                let ts = document.getElementById('timer');
-                if(ts) ts.innerText = t;
-                if(t <= 0) { clearInterval(itv); document.getElementById('wait-area').style.display = "none"; document.getElementById('secret-area').style.display = "block"; }
-            }, 1000);
+            cleanupExpiredCodes();
+            updateLastSync();
+            filterCards();
+        } catch (e) {
+            console.error('Sync failed:', e);
+            document.getElementById('container').innerHTML = '<div style="text-align:center; padding:50px; color:var(--danger);">Failed to load data. Refresh.</div>';
         }
     }
 
-    function openKeyManager() {
-        if(currentUserRole !== "HeadAdmin") return alert("HeadAdmin Only!");
+    function cleanupExpiredCodes() {
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+        let changed = false;
+        for (const [code, value] of Object.entries(state.activeCodes)) {
+            if (typeof value === 'object' && value.createdAt) {
+                if (now - new Date(value.createdAt).getTime() > oneDay) {
+                    delete state.activeCodes[code];
+                    changed = true;
+                }
+            } else if (typeof value === 'string' && value === "VERIFIED") {
+                state.activeCodes[code] = { status: "VERIFIED", createdAt: new Date().toISOString() };
+                changed = true;
+            }
+        }
+        if (changed) syncCloud();
+    }
+
+    async function syncCloud() {
+        if (syncInProgress) return;
+        syncInProgress = true;
+
+        try {
+            const latest = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}/latest`, {
+                headers: { "X-Master-Key": CONFIG.MASTER_KEY }
+            }).then(r => r.json()).then(d => d.record);
+
+            const merged = {
+                cards: state.cards,
+                admins: state.admins,
+                headAdmins: state.headAdmins,
+                activeCodes: latest.activeCodes || {}
+            };
+
+            const res = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}`, {
+                method: 'PUT',
+                headers: { "Content-Type": "application/json", "X-Master-Key": CONFIG.MASTER_KEY },
+                body: JSON.stringify(merged)
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            await fetchCloud();
+        } catch (e) {
+            console.error('Sync failed:', e);
+            alert('Failed to save changes. Check connection.');
+        } finally {
+            syncInProgress = false;
+        }
+    }
+
+    // ==================== UI RENDERING ====================
+    function showSkeletons() {
+        const container = document.getElementById('container');
+        let skeletons = '';
+        for (let i = 0; i < 6; i++) {
+            skeletons += `
+                <div class="card">
+                    <div class="skeleton"></div>
+                    <div style="height:20px; background:var(--border-color); margin:10px 0; border-radius:4px;"></div>
+                    <div style="height:15px; width:60%; background:var(--border-color); margin:0 auto; border-radius:4px;"></div>
+                </div>
+            `;
+        }
+        container.innerHTML = skeletons;
+    }
+
+    function filterCards() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        filteredCards = state.cards.filter(card =>
+            (card.description && card.description.toLowerCase().includes(query)) ||
+            card.username.toLowerCase().includes(query)
+        );
+        renderCards();
+    }
+
+    function renderCards() {
+        const container = document.getElementById('container');
+        if (filteredCards.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:50px; color:var(--text-secondary);">📭 No accounts match your search</div>';
+            return;
+        }
+        container.innerHTML = '';
+        filteredCards.forEach((card) => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.setAttribute('data-username', card.username);
+            div.setAttribute('data-password', card.password);
+            div.innerHTML = `
+                <img src="${card.image || 'https://via.placeholder.com/260x160/1e293b/00f7ff?text=No+Image'}" 
+                     alt="${escapeHtml(card.username)}"
+                     loading="lazy"
+                     onerror="this.src='https://via.placeholder.com/260x160/1e293b/00f7ff?text=Error'">
+                <div class="games">${escapeHtml(card.description || 'No games')}</div>
+                <small>👤 ${escapeHtml(card.username)}</small>
+                <div style="margin-top:8px;">
+                    <span class="category-badge category-${card.category.toLowerCase().replace(' ', '')}">${card.category}</span>
+                    <span class="health-dot health-${card.health === 'Good' ? 'good' : 'suspected'}"></span>
+                </div>
+                <small>👁️ ${card.views || 0} views</small>
+            `;
+            // Pass the card object directly to avoid index issues
+            div.onclick = () => openCardDetails(card);
+            container.appendChild(div);
+        });
+    }
+
+    function updateStats() {
+        document.getElementById('countAcc').innerText = state.cards?.length || 0;
+        document.getElementById('roleDisplay').innerText = currentUser.role;
+    }
+    function updateLastSync() {
+        document.getElementById('lastSync').innerText = new Date().toLocaleTimeString();
+    }
+
+    // ==================== LOGIN FUNCTIONS ====================
+    function openAdminLogin() {
+        const t = translations[currentLang];
         document.getElementById('popup').innerHTML = `
-            <h2>System Key Manager</h2>
-            <div class="key-manager">
-                <h4>Admins Keys:</h4>
-                <div style="background:#000; padding:10px; border-radius:8px; max-height:100px; overflow-y:auto; margin-bottom:10px;">
-                    ${state.admins.map(k => `<div class="copy-row"><span>${k}</span><button onclick="removeKey('admins','${k}')" style="background:none; border:none; color:red; cursor:pointer;">✖</button></div>`).join('')}
-                </div>
-                <input id="newAdminK" placeholder="New Admin Key">
-                <button class="btn btn-admin" style="width:100%" onclick="addNewKey('admins')">Add Admin Key</button>
-            </div>
-            <div class="key-manager">
-                <h4>Head Admins Keys:</h4>
-                <div style="background:#000; padding:10px; border-radius:8px; max-height:100px; overflow-y:auto; margin-bottom:10px;">
-                    ${state.headAdmins.map(k => `<div class="copy-row"><span>${k}</span><button onclick="removeKey('headAdmins','${k}')" style="background:none; border:none; color:red; cursor:pointer;">✖</button></div>`).join('')}
-                </div>
-                <input id="newHeadK" placeholder="New HeadAdmin Key">
-                <button class="btn" style="width:100%; background:var(--head); color:#000;" onclick="addNewKey('headAdmins')">Add HeadAdmin Key</button>
-            </div>
-            <button class="btn" style="width:100%; margin-top:20px; background:#475569" onclick="closePop()">Exit Manager</button>`;
+            <h2 style="margin-bottom:20px;">🔑 ${t.adminLoginBtn}</h2>
+            <p style="color:var(--text-secondary); margin-bottom:20px;">Enter your admin key.</p>
+            <input type="password" id="adminKey" placeholder="Admin key" autocomplete="off">
+            <button class="btn btn-admin" style="width:100%; margin-bottom:10px;" onclick="verifyAdmin()">${t.adminLoginBtn}</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
         showPop();
     }
 
-    function addNewKey(type) {
-        let val = document.getElementById(type === 'admins' ? 'newAdminK' : 'newHeadK').value;
-        if(val) { state[type].push(val); syncCloud(); openKeyManager(); }
+    function openGuestLogin() {
+        const t = translations[currentLang];
+        document.getElementById('popup').innerHTML = `
+            <h2 style="margin-bottom:20px;">👤 ${t.guestLoginBtn}</h2>
+            <p style="color:var(--text-secondary); margin-bottom:20px;">
+                Enter the 8‑character code you received from the Discord bot.
+            </p>
+            <input type="text" id="guestCode" placeholder="e.g. X7k9P2mQ" maxlength="8" autocomplete="off">
+            <button class="btn btn-guest" style="width:100%; margin-bottom:10px;" onclick="verifyGuest()">${t.guestLoginBtn}</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
+        showPop();
     }
 
-    function removeKey(type, key) {
-        if(state[type].length <= 1) return alert("Cannot remove the last key!");
-        if(confirm("Remove this key?")) { state[type] = state[type].filter(k => k !== key); syncCloud(); openKeyManager(); }
+    function verifyAdmin() {
+        const key = document.getElementById('adminKey')?.value.trim();
+        if (!key) return alert('Please enter a key.');
+        if (state.headAdmins.includes(key)) {
+            currentUser = { role: "HeadAdmin", key };
+            enableApp(true);
+            closePop();
+        } else if (state.admins.includes(key)) {
+            currentUser = { role: "Admin", key };
+            enableApp(false);
+            closePop();
+        } else {
+            alert('Invalid admin key.');
+        }
+    }
+
+    function verifyGuest() {
+        const code = document.getElementById('guestCode')?.value.trim();
+        if (!code || code.length !== 8) return alert('Please enter an 8‑character code.');
+
+        const codeData = state.activeCodes[code];
+        if (!codeData) return alert('Invalid or expired code.');
+
+        if (codeData.createdAt) {
+            const age = Date.now() - new Date(codeData.createdAt).getTime();
+            if (age > 24 * 60 * 60 * 1000) {
+                alert('Code has expired. Please get a new one from the Discord bot.');
+                return;
+            }
+        }
+
+        if (codeData.status === "VERIFIED" || codeData === "VERIFIED") {
+            currentUser = { role: "User", key: code };
+            userLoginTime = Date.now();
+            enableApp(false);
+            closePop();
+        } else {
+            alert('Invalid code.');
+        }
+    }
+
+    function enableApp(isHead) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'flex';
+        document.getElementById('dash').style.display = "grid";
+        document.getElementById('logoutBtn').style.display = "inline-flex";
+        // Show/hide admin buttons
+        if (currentUser.role === "Admin" || currentUser.role === "HeadAdmin") {
+            document.getElementById('addBtn').style.display = "inline-flex";
+            if (isHead) {
+                document.getElementById('manageBtn').style.display = "inline-flex";
+            } else {
+                document.getElementById('manageBtn').style.display = "none";
+            }
+        } else {
+            document.getElementById('addBtn').style.display = "none";
+            document.getElementById('manageBtn').style.display = "none";
+        }
+        updateStats();
+    }
+
+    function logout() {
+        currentUser = { role: "Guest", key: null };
+        userLoginTime = null;
+        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'flex';
+        // Hide admin buttons
+        document.getElementById('addBtn').style.display = "none";
+        document.getElementById('manageBtn').style.display = "none";
+        document.getElementById('logoutBtn').style.display = "none";
+        closePop();
+    }
+
+    // ==================== CARD OPERATIONS ====================
+    function openCardDetails(card) {
+        if (currentUser.role === "Guest") {
+            alert('Please log in first.');
+            return;
+        }
+        if (checkUserSession()) return;
+
+        // Find current index in state.cards (to update correctly)
+        const index = state.cards.findIndex(c => c.username === card.username && c.password === card.password);
+        if (index === -1) return;
+
+        // Increment view count
+        state.cards[index].views = (state.cards[index].views || 0) + 1;
+        syncCloud();
+
+        const canManage = currentUser.role === "Admin" || currentUser.role === "HeadAdmin";
+        const t = translations[currentLang];
+
+        const healthOptions = CONFIG.CATEGORIES.map(cat => `<option value="${cat}" ${state.cards[index].category === cat ? 'selected' : ''}>${cat}</option>`).join('');
+        const healthToggle = canManage ? `
+            <div style="margin:15px 0;">
+                <label>${t.category}</label>
+                <select id="editCategory">
+                    ${healthOptions}
+                </select>
+                <label>Health</label>
+                <select id="editHealth">
+                    <option value="Good" ${state.cards[index].health === 'Good' ? 'selected' : ''}>${t.healthGood}</option>
+                    <option value="Suspected" ${state.cards[index].health === 'Suspected' ? 'selected' : ''}>${t.healthSuspected}</option>
+                </select>
+                <button class="btn btn-admin" style="width:100%; margin-top:10px;" onclick="updateAccount(${index})">Update</button>
+            </div>
+        ` : '';
+
+        document.getElementById('popup').innerHTML = `
+            <img src="${state.cards[index].image || 'https://via.placeholder.com/500x250/1e293b/00f7ff?text=No+Image'}" 
+                 style="width:100%; border-radius:10px; margin-bottom:15px;"
+                 onerror="this.src='https://via.placeholder.com/500x250/1e293b/00f7ff?text=Error'">
+            <h2>${escapeHtml(state.cards[index].username)}</h2>
+            <p style="color:var(--text-secondary); margin-bottom:20px;">${escapeHtml(state.cards[index].description || 'No games.')}</p>
+            <div><strong>Category:</strong> ${state.cards[index].category}</div>
+            <div><strong>Health:</strong> <span class="health-dot health-${state.cards[index].health === 'Good' ? 'good' : 'suspected'}"></span> ${state.cards[index].health}</div>
+            <div><strong>Views:</strong> ${state.cards[index].views}</div>
+            ${healthToggle}
+            <div id="wait-area" class="stat-card" style="border:none; background:var(--bg-card); margin-bottom:15px; ${canManage ? 'display:none;' : ''}">
+                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <span>${t.decrypting}</span>
+                    <span id="timer" style="color:var(--danger); font-weight:bold; font-size:24px;">${CONFIG.VERIFICATION_TIMER}</span>${t.seconds}
+                </div>
+            </div>
+            <div id="secret-area" style="${canManage ? 'display:block;' : 'display:none;'}">
+                <div class="copy-row"><span>👤 ${escapeHtml(state.cards[index].username)}</span><button class="btn" onclick="copyToClipboard('${escapeHtml(state.cards[index].username)}')">${t.copy}</button></div>
+                <div class="password-row">
+                    <input type="password" id="passwordField" value="${escapeHtml(state.cards[index].password)}" readonly>
+                    <button class="btn-icon" onclick="togglePasswordVisibility()">👁️</button>
+                </div>
+                <button class="btn" onclick="copyToClipboard('${escapeHtml(state.cards[index].password)}')">${t.copy}</button>
+            </div>
+            ${canManage ? `<button class="btn" style="background:var(--danger); width:100%; margin-bottom:10px;" onclick="deleteCard(${index})">🗑️ ${t.delete}</button>` : ''}
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">✖️ ${t.close}</button>
+        `;
+        showPop();
+
+        if (!canManage && currentUser.role === "User") {
+            startVerificationTimer();
+        } else {
+            document.getElementById('wait-area').style.display = 'none';
+            document.getElementById('secret-area').style.display = 'block';
+        }
+    }
+
+    function togglePasswordVisibility() {
+        const field = document.getElementById('passwordField');
+        field.type = field.type === 'password' ? 'text' : 'password';
+    }
+
+    function updateAccount(index) {
+        const category = document.getElementById('editCategory')?.value;
+        const health = document.getElementById('editHealth')?.value;
+        if (category) state.cards[index].category = category;
+        if (health) state.cards[index].health = health;
+        syncCloud();
+        closePop();
+    }
+
+    function startVerificationTimer() {
+        let timeLeft = CONFIG.VERIFICATION_TIMER;
+        const timerEl = document.getElementById('timer');
+        const waitArea = document.getElementById('wait-area');
+        const secretArea = document.getElementById('secret-area');
+        const interval = setInterval(() => {
+            timeLeft--;
+            if (timerEl) timerEl.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                if (waitArea) waitArea.style.display = "none";
+                if (secretArea) secretArea.style.display = "block";
+            }
+        }, 1000);
     }
 
     function openAddCard() {
+        if (!['Admin','HeadAdmin'].includes(currentUser.role)) return alert('Admins only.');
+        if (checkUserSession()) return;
+        const t = translations[currentLang];
+        const categoryOptions = CONFIG.CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        // Clear previous temp image and form values
+        tempImage = null;
         document.getElementById('popup').innerHTML = `
-            <h2>Add Global Account</h2>
-            <input type="file" id="fIn" onchange="encodeImg(event)">
-            <input id="u" placeholder="Username">
-            <input id="p" placeholder="Password">
-            <textarea id="desc" placeholder="Details (Games, Level...)"></textarea>
-            <button class="btn btn-admin" style="width:100%" onclick="saveCard()">Upload To Cloud</button>
-            <button class="btn" style="width:100%; margin-top:10px; background:var(--danger)" onclick="closePop()">Cancel</button>`;
+            <h2>${t.addAccount}</h2>
+            <div><label>Image</label><input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)"></div>
+            <input type="text" id="username" placeholder="${t.username} *" value="">
+            <input type="text" id="password" placeholder="${t.password} *" value="">
+            <textarea id="description" placeholder="${t.description}" rows="3"></textarea>
+            <select id="category">
+                ${categoryOptions}
+            </select>
+            <button class="btn btn-admin" style="width:100%; margin-bottom:10px;" onclick="saveCard()">${t.upload}</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
         showPop();
     }
 
-    function encodeImg(e) { const reader = new FileReader(); reader.onload = () => tempImg = reader.result; reader.readAsDataURL(e.target.files[0]); }
+    function handleImageUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 5*1024*1024) return alert('Max 5MB');
+        const reader = new FileReader();
+        reader.onload = (e) => tempImage = e.target.result;
+        reader.readAsDataURL(file);
+    }
 
     async function saveCard() {
-        const u = document.getElementById('u').value, p = document.getElementById('p').value, d = document.getElementById('desc').value;
-        if(!u || !p) return alert("Required fields missing!");
-        state.cards.unshift({ username: u, password: p, description: d, image: tempImg });
-        closePop(); await syncCloud(); tempImg = "";
+        const username = document.getElementById('username')?.value.trim();
+        const password = document.getElementById('password')?.value.trim();
+        const description = document.getElementById('description')?.value.trim();
+        const category = document.getElementById('category')?.value;
+        if (!username || !password) return alert('Username and password required.');
+
+        const newCard = {
+            username,
+            password,
+            description: description || 'No games',
+            category: category || 'Steam',
+            health: 'Good',
+            views: 0,
+            image: tempImage,
+            addedBy: currentUser.key,
+            addedAt: new Date().toISOString()
+        };
+
+        state.cards.unshift(newCard);
+        tempImage = null;
+        closePop();
+        await syncCloud();
+        sendDiscordWebhook(newCard);
     }
 
-    async function deleteCard(i) {
-        if(confirm("Delete this for everyone?")) { state.cards.splice(i, 1); closePop(); await syncCloud(); }
+    async function sendDiscordWebhook(account) {
+        if (!CONFIG.DISCORD_WEBHOOK_URL || CONFIG.DISCORD_WEBHOOK_URL.includes('your_webhook')) return;
+        try {
+            const embed = {
+                title: 'New Account Added',
+                color: 0x00f7ff,
+                fields: [
+                    { name: 'Games', value: account.description || 'None', inline: true },
+                    { name: 'Username', value: account.username, inline: true },
+                    { name: 'Category', value: account.category, inline: true },
+                    { name: 'Added by', value: currentUser.key, inline: true }
+                ],
+                timestamp: new Date().toISOString()
+            };
+            await fetch(CONFIG.DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ embeds: [embed] })
+            });
+        } catch (e) {
+            console.error('Webhook failed:', e);
+        }
     }
 
+    async function deleteCard(index) {
+        if (!confirm('Delete forever?')) return;
+        state.cards.splice(index, 1);
+        closePop();
+        await syncCloud();
+    }
+
+    // ==================== KEY MANAGER ====================
+    function openKeyManager() {
+        if (currentUser.role !== "HeadAdmin") return alert('Head Admin only.');
+        const t = translations[currentLang];
+        document.getElementById('popup').innerHTML = `
+            <h2>🔑 ${t.manageKeys}</h2>
+            <div class="key-manager">
+                <h4>Admins (${state.admins.length})</h4>
+                <div class="key-list">${state.admins.map(k => `<div class="key-item"><span>${k}</span>${state.admins.length>1?`<button onclick="removeKey('admins','${k}')">✖</button>`:'<span>(min)</span>'}</div>`).join('')}</div>
+                <input id="newAdminKey" placeholder="New admin key"><button class="btn btn-admin" style="width:100%; margin-top:10px;" onclick="addKey('admins')">Add</button>
+            </div>
+            <div class="key-manager">
+                <h4>Head Admins (${state.headAdmins.length})</h4>
+                <div class="key-list">${state.headAdmins.map(k => `<div class="key-item"><span>${k}</span>${state.headAdmins.length>1?`<button onclick="removeKey('headAdmins','${k}')">✖</button>`:'<span>(min)</span>'}</div>`).join('')}</div>
+                <input id="newHeadKey" placeholder="New head admin key"><button class="btn" style="width:100%; background:var(--head); color:#000;" onclick="addKey('headAdmins')">Add</button>
+            </div>
+            <button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>
+        `;
+        showPop();
+    }
+
+    async function addKey(type) {
+        const input = document.getElementById(type==='admins'?'newAdminKey':'newHeadKey');
+        const val = input?.value.trim();
+        if (!val) return alert('Enter a key.');
+        if (state[type].includes(val)) return alert('Already exists.');
+        state[type].push(val);
+        await syncCloud();
+        openKeyManager();
+    }
+
+    async function removeKey(type, key) {
+        if (state[type].length <= 1) return alert('Cannot remove last key.');
+        if (!confirm('Remove this key?')) return;
+        state[type] = state[type].filter(k => k !== key);
+        await syncCloud();
+        openKeyManager();
+    }
+
+    // ==================== UTILITIES ====================
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    function copyToClipboard(t) {
+        if (!navigator.clipboard) {
+            const textarea = document.createElement('textarea');
+            textarea.value = t;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Copied!');
+            return;
+        }
+        navigator.clipboard.writeText(t).then(() => alert('Copied!')).catch(() => alert('Copy failed.'));
+    }
     function showPop() { document.getElementById('overlay').style.display = "flex"; }
-    function closePop() { document.getElementById('overlay').style.display = "none"; }
-    function copy(t) { navigator.clipboard.writeText(t); alert("Copied!"); }
-    fetchCloud();
+    function closePop() { document.getElementById('overlay').style.display = "none"; document.getElementById('popup').innerHTML = ''; }
+
+    // ==================== INIT ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        detectAdBlock();
+        fetchCloud();
+        setInterval(fetchCloud, 30000);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.getElementById('overlay').style.display === 'flex') closePop(); });
+        updateTexts(); // Set initial texts
+    });
 </script>
 </body>
 </html>
