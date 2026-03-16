@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steamvault Cloud PRO</title>
     <style>
-        /* ========== STYLES (same as before) ========== */
+        /* ========== STYLES ========== */
         * {
             margin: 0;
             padding: 0;
@@ -70,15 +70,31 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        #adblockWarning {
-            background: var(--danger);
-            color: white;
-            text-align: center;
-            padding: 10px;
-            position: sticky;
+        /* Adblock full‑page overlay */
+        #adblockOverlay {
+            position: fixed;
             top: 0;
-            z-index: 10000;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
             display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100000;
+            text-align: center;
+            padding: 20px;
+        }
+        #adblockOverlay .message {
+            background: var(--secondary);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--danger);
+            max-width: 500px;
+        }
+        #adblockOverlay h2 {
+            color: var(--danger);
+            margin-bottom: 20px;
         }
 
         /* Login Screen */
@@ -532,18 +548,26 @@
 </head>
 <body>
 
-<div id="adblockWarning">⚠️ Ad blocker detected. Please disable it to support us. Thanks!</div>
+<!-- ADBLOCK FULL‑PAGE OVERLAY -->
+<div id="adblockOverlay">
+    <div class="message">
+        <h2>⚠️ Ad Blocker Detected</h2>
+        <p>Please disable your ad blocker to access Steamvault Cloud. We rely on non‑intrusive ads to keep the service free.</p>
+        <p>After disabling, refresh the page.</p>
+    </div>
+</div>
 
 <!-- LOGIN SCREEN -->
 <div id="loginScreen">
     <div class="login-container">
         <h1 id="loginTitle">Steamvault Cloud</h1>
         <p id="loginSubtitle">Please log in to access the cloud</p>
-        <button class="login-btn admin" onclick="openAdminLogin()">
-            <span id="adminLoginBtn">🔑 Admin Login</span>
+        <div id="loginCooldownMessage" style="color: var(--danger); margin-bottom: 10px; display: none;"></div>
+        <button class="login-btn admin" onclick="openAdminLogin()" id="adminLoginBtn">
+            <span id="adminLoginBtnText">🔑 Admin Login</span>
         </button>
-        <button class="login-btn guest" onclick="openGuestLogin()">
-            <span id="guestLoginBtn">👤 Guest Login</span>
+        <button class="login-btn guest" onclick="openGuestLogin()" id="guestLoginBtn">
+            <span id="guestLoginBtnText">👤 Guest Login</span>
         </button>
         <a href="https://discord.gg/nqHyAEqJsn" target="_blank" class="login-btn discord">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -569,6 +593,12 @@
             <small id="statLastSync">Last Sync</small>
             <span id="lastSync">-</span>
         </div>
+        <!-- Session management card (visible only to head admins) -->
+        <div class="stat-card" id="sessionCard" style="display:none;">
+            <small>Active Guest Sessions</small>
+            <span id="activeSessions">0</span>
+            <button class="btn btn-manage" style="margin-top:10px;" onclick="forceLogoutAllGuests()">Force Logout All</button>
+        </div>
     </div>
 
     <div class="header">
@@ -582,7 +612,7 @@
                 <option value="ar">🇸🇦 العربية</option>
             </select>
             <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌓 Theme</button>
-            <!-- Admin buttons (hidden by default) -->
+            <!-- Admin buttons -->
             <button class="btn btn-add" id="addBtn" style="display:none;" onclick="openAddCard()">➕ Add Account</button>
             <button class="btn btn-manage" id="manageBtn" style="display:none;" onclick="openKeyManager()">🔑 Manage Keys</button>
             <button class="btn btn-admin" id="logoutBtn" style="display:none;" onclick="logout()">🚪 Logout</button>
@@ -598,6 +628,7 @@
     </div>
 </div>
 
+<!-- Popup Overlay -->
 <div class="overlay" id="overlay">
     <div class="popup" id="popup"></div>
 </div>
@@ -612,7 +643,11 @@
         VERIFICATION_TIMER: 30,
         USER_SESSION_HOURS: 24,
         DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/your_webhook_id/your_webhook_token", // Replace with your webhook
-        CATEGORIES: ["Steam", "Xbox", "Epic Games"]
+        CATEGORIES: ["Steam", "Xbox", "Epic Games"],
+        RATE_LIMIT: {
+            MAX_ATTEMPTS: 5,
+            COOLDOWN_MINUTES: 5
+        }
     };
 
     // ==================== MULTI-LANGUAGE SUPPORT ====================
@@ -645,7 +680,11 @@
             viewCount: "Views",
             decrypting: "🔒 Decrypting...",
             seconds: "s",
-            adblockWarning: "⚠️ Ad blocker detected. Please disable it to support us. Thanks!"
+            adblockMessage: "Please disable your ad blocker to access Steamvault Cloud.",
+            cooldownMessage: "Too many failed attempts. Please wait {minutes} minutes.",
+            forceLogoutAll: "Force Logout All",
+            activeSessions: "Active Guest Sessions",
+            sessionRevoked: "Your session was revoked by an admin."
         },
         ar: {
             loginTitle: "ستيم فولت كلاود",
@@ -675,24 +714,119 @@
             viewCount: "مشاهدات",
             decrypting: "🔒 جاري فك التشفير...",
             seconds: "ث",
-            adblockWarning: "⚠️ تم اكتشاف مانع إعلانات. الرجاء تعطيله لدعمنا. شكراً!"
+            adblockMessage: "الرجاء تعطيل مانع الإعلانات للوصول إلى ستيم فولت كلاود.",
+            cooldownMessage: "محاولات فاشلة كثيرة. الرجاء الانتظار {minutes} دقائق.",
+            forceLogoutAll: "تسجيل خروج الجميع",
+            activeSessions: "الجلسات النشطة",
+            sessionRevoked: "تم إلغاء جلستك بواسطة المشرف."
         }
     };
     let currentLang = 'en';
 
-    // ==================== ADBLOCK DETECTION ====================
-    function detectAdBlock() {
+    // ==================== ADBLOCK DETECTION (STRICT) ====================
+    function detectAdBlockStrict() {
         const test = document.createElement('div');
         test.className = 'adsbox';
         test.style.height = '1px';
         document.body.appendChild(test);
         setTimeout(() => {
             if (test.offsetHeight === 0) {
-                document.getElementById('adblockWarning').style.display = 'block';
-                updateTexts();
+                // Adblock detected – block entire page
+                document.getElementById('adblockOverlay').style.display = 'flex';
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'none';
+            } else {
+                document.getElementById('adblockOverlay').style.display = 'none';
             }
             test.remove();
         }, 100);
+    }
+
+    // ==================== RATE LIMITING ====================
+    const rateLimit = {
+        admin: { attempts: 0, lockedUntil: 0 },
+        guest: { attempts: 0, lockedUntil: 0 },
+        save() {
+            localStorage.setItem('rateLimit', JSON.stringify({ admin: this.admin, guest: this.guest }));
+        },
+        load() {
+            const saved = localStorage.getItem('rateLimit');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.admin = data.admin;
+                this.guest = data.guest;
+            }
+        },
+        check(type) {
+            this.load();
+            const now = Date.now();
+            const record = this[type];
+            if (record.lockedUntil > now) {
+                const minutes = Math.ceil((record.lockedUntil - now) / 60000);
+                return { allowed: false, minutes };
+            }
+            return { allowed: true };
+        },
+        addAttempt(type) {
+            this.load();
+            const record = this[type];
+            record.attempts++;
+            if (record.attempts >= CONFIG.RATE_LIMIT.MAX_ATTEMPTS) {
+                record.lockedUntil = Date.now() + CONFIG.RATE_LIMIT.COOLDOWN_MINUTES * 60000;
+                record.attempts = 0;
+            }
+            this.save();
+        },
+        reset(type) {
+            this.load();
+            this[type] = { attempts: 0, lockedUntil: 0 };
+            this.save();
+        }
+    };
+
+    // ==================== SESSION MANAGEMENT ====================
+    let globalSessionId = 0; // will be loaded from JSONBin
+
+    async function loadGlobalSessionId() {
+        try {
+            const latest = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}/latest`, {
+                headers: { "X-Master-Key": CONFIG.MASTER_KEY }
+            }).then(r => r.json()).then(d => d.record);
+            globalSessionId = latest.globalSessionId || 0;
+        } catch (e) {
+            console.error('Failed to load session ID', e);
+        }
+    }
+
+    async function incrementGlobalSessionId() {
+        globalSessionId++;
+        // Save to JSONBin (merge with existing data)
+        try {
+            const latest = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}/latest`, {
+                headers: { "X-Master-Key": CONFIG.MASTER_KEY }
+            }).then(r => r.json()).then(d => d.record);
+            latest.globalSessionId = globalSessionId;
+            await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}`, {
+                method: 'PUT',
+                headers: { "Content-Type": "application/json", "X-Master-Key": CONFIG.MASTER_KEY },
+                body: JSON.stringify(latest)
+            });
+        } catch (e) {
+            console.error('Failed to save session ID', e);
+        }
+    }
+
+    // Check if current guest session is still valid
+    async function checkSessionValidity() {
+        if (currentUser.role !== 'User') return true;
+        await loadGlobalSessionId();
+        const storedSessionId = localStorage.getItem('guestSessionId');
+        if (!storedSessionId || parseInt(storedSessionId) !== globalSessionId) {
+            alert(translations[currentLang].sessionRevoked);
+            logout();
+            return false;
+        }
+        return true;
     }
 
     // ==================== STATE ====================
@@ -701,10 +835,11 @@
         admins: ["Blue_lock1"],
         headAdmins: ["21640800"],
         activeCodes: {},
+        globalSessionId: 0,
         lastUpdated: null
     };
     let currentUser = {
-        role: "Guest", // Guest, User, Admin, HeadAdmin
+        role: "Guest",
         key: null
     };
     let userLoginTime = null;
@@ -717,8 +852,8 @@
         const t = translations[currentLang];
         document.getElementById('loginTitle').innerText = t.loginTitle;
         document.getElementById('loginSubtitle').innerText = t.loginSubtitle;
-        document.getElementById('adminLoginBtn').innerText = t.adminLoginBtn;
-        document.getElementById('guestLoginBtn').innerText = t.guestLoginBtn;
+        document.getElementById('adminLoginBtnText').innerText = t.adminLoginBtn;
+        document.getElementById('guestLoginBtnText').innerText = t.guestLoginBtn;
         document.getElementById('discordBtn').innerText = t.discordBtn;
         document.getElementById('statAccounts').innerText = t.statAccounts;
         document.getElementById('statRole').innerText = t.statRole;
@@ -726,10 +861,14 @@
         document.getElementById('appTitle').innerText = t.appTitle;
         document.getElementById('logoutText').innerText = t.logoutText;
         document.getElementById('searchInput').placeholder = t.searchPlaceholder;
-        document.getElementById('adblockWarning').innerText = t.adblockWarning;
-        // Update dynamic button texts (they are already in HTML but we keep them updated)
         document.getElementById('addBtn').innerHTML = t.addAccount;
         document.getElementById('manageBtn').innerHTML = t.manageKeys;
+        // Session card
+        const sessionCard = document.getElementById('sessionCard');
+        if (sessionCard) {
+            sessionCard.querySelector('small').innerText = t.activeSessions;
+            sessionCard.querySelector('button').innerText = t.forceLogoutAll;
+        }
     }
 
     document.getElementById('langSelect').addEventListener('change', (e) => {
@@ -742,7 +881,7 @@
         document.body.classList.toggle('light-theme');
     }
 
-    // ==================== SESSION CHECK ====================
+    // ==================== SESSION CHECK (24h) ====================
     function checkUserSession() {
         if (currentUser.role === "User" && userLoginTime) {
             const elapsed = Date.now() - userLoginTime;
@@ -756,7 +895,10 @@
         return false;
     }
     setInterval(() => {
-        if (currentUser.role === "User") checkUserSession();
+        if (currentUser.role === "User") {
+            checkUserSession();
+            checkSessionValidity(); // also check global session
+        }
     }, 60000);
 
     // ==================== API FUNCTIONS ====================
@@ -786,12 +928,15 @@
                 admins: data.record.admins || ["Blue_lock1"],
                 headAdmins: data.record.headAdmins || ["21640800"],
                 activeCodes: data.record.activeCodes || {},
+                globalSessionId: data.record.globalSessionId || 0,
                 lastUpdated: new Date().toISOString()
             };
+            globalSessionId = state.globalSessionId;
 
             cleanupExpiredCodes();
             updateLastSync();
             filterCards();
+            updateSessionCard();
         } catch (e) {
             console.error('Sync failed:', e);
             document.getElementById('container').innerHTML = '<div style="text-align:center; padding:50px; color:var(--danger);">Failed to load data. Refresh.</div>';
@@ -829,7 +974,8 @@
                 cards: state.cards,
                 admins: state.admins,
                 headAdmins: state.headAdmins,
-                activeCodes: latest.activeCodes || {}
+                activeCodes: latest.activeCodes || {},
+                globalSessionId: state.globalSessionId // keep our value
             };
 
             const res = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}`, {
@@ -898,7 +1044,6 @@
                 </div>
                 <small>👁️ ${card.views || 0} views</small>
             `;
-            // Pass the card object directly to avoid index issues
             div.onclick = () => openCardDetails(card);
             container.appendChild(div);
         });
@@ -908,12 +1053,36 @@
         document.getElementById('countAcc').innerText = state.cards?.length || 0;
         document.getElementById('roleDisplay').innerText = currentUser.role;
     }
+
     function updateLastSync() {
         document.getElementById('lastSync').innerText = new Date().toLocaleTimeString();
     }
 
+    function updateSessionCard() {
+        const sessionCard = document.getElementById('sessionCard');
+        if (currentUser.role === 'HeadAdmin') {
+            sessionCard.style.display = 'block';
+            // Count active guest sessions (based on local storage? Not reliable)
+            // Instead, we can show the current global session ID and a button to increment.
+            // For simplicity, we'll just show the global session ID as "active sessions" counter.
+            document.getElementById('activeSessions').innerText = state.globalSessionId;
+        } else {
+            sessionCard.style.display = 'none';
+        }
+    }
+
     // ==================== LOGIN FUNCTIONS ====================
     function openAdminLogin() {
+        // Check rate limit
+        const check = rateLimit.check('admin');
+        if (!check.allowed) {
+            const msg = translations[currentLang].cooldownMessage.replace('{minutes}', check.minutes);
+            document.getElementById('loginCooldownMessage').innerText = msg;
+            document.getElementById('loginCooldownMessage').style.display = 'block';
+            return;
+        }
+        document.getElementById('loginCooldownMessage').style.display = 'none';
+
         const t = translations[currentLang];
         document.getElementById('popup').innerHTML = `
             <h2 style="margin-bottom:20px;">🔑 ${t.adminLoginBtn}</h2>
@@ -926,6 +1095,16 @@
     }
 
     function openGuestLogin() {
+        // Check rate limit
+        const check = rateLimit.check('guest');
+        if (!check.allowed) {
+            const msg = translations[currentLang].cooldownMessage.replace('{minutes}', check.minutes);
+            document.getElementById('loginCooldownMessage').innerText = msg;
+            document.getElementById('loginCooldownMessage').style.display = 'block';
+            return;
+        }
+        document.getElementById('loginCooldownMessage').style.display = 'none';
+
         const t = translations[currentLang];
         document.getElementById('popup').innerHTML = `
             <h2 style="margin-bottom:20px;">👤 ${t.guestLoginBtn}</h2>
@@ -941,41 +1120,58 @@
 
     function verifyAdmin() {
         const key = document.getElementById('adminKey')?.value.trim();
-        if (!key) return alert('Please enter a key.');
+        if (!key) {
+            rateLimit.addAttempt('admin');
+            return alert('Please enter a key.');
+        }
         if (state.headAdmins.includes(key)) {
+            rateLimit.reset('admin');
             currentUser = { role: "HeadAdmin", key };
             enableApp(true);
             closePop();
         } else if (state.admins.includes(key)) {
+            rateLimit.reset('admin');
             currentUser = { role: "Admin", key };
             enableApp(false);
             closePop();
         } else {
+            rateLimit.addAttempt('admin');
             alert('Invalid admin key.');
         }
     }
 
     function verifyGuest() {
         const code = document.getElementById('guestCode')?.value.trim();
-        if (!code || code.length !== 8) return alert('Please enter an 8‑character code.');
+        if (!code || code.length !== 8) {
+            rateLimit.addAttempt('guest');
+            return alert('Please enter an 8‑character code.');
+        }
 
         const codeData = state.activeCodes[code];
-        if (!codeData) return alert('Invalid or expired code.');
+        if (!codeData) {
+            rateLimit.addAttempt('guest');
+            return alert('Invalid or expired code.');
+        }
 
         if (codeData.createdAt) {
             const age = Date.now() - new Date(codeData.createdAt).getTime();
             if (age > 24 * 60 * 60 * 1000) {
+                rateLimit.addAttempt('guest');
                 alert('Code has expired. Please get a new one from the Discord bot.');
                 return;
             }
         }
 
         if (codeData.status === "VERIFIED" || codeData === "VERIFIED") {
+            rateLimit.reset('guest');
             currentUser = { role: "User", key: code };
             userLoginTime = Date.now();
+            // Store current global session ID for this guest
+            localStorage.setItem('guestSessionId', globalSessionId);
             enableApp(false);
             closePop();
         } else {
+            rateLimit.addAttempt('guest');
             alert('Invalid code.');
         }
     }
@@ -998,18 +1194,30 @@
             document.getElementById('manageBtn').style.display = "none";
         }
         updateStats();
+        updateSessionCard();
     }
 
     function logout() {
         currentUser = { role: "Guest", key: null };
         userLoginTime = null;
+        localStorage.removeItem('guestSessionId');
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
-        // Hide admin buttons
         document.getElementById('addBtn').style.display = "none";
         document.getElementById('manageBtn').style.display = "none";
         document.getElementById('logoutBtn').style.display = "none";
+        document.getElementById('sessionCard').style.display = 'none';
         closePop();
+    }
+
+    // Force logout all guests by incrementing global session ID
+    async function forceLogoutAllGuests() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        if (!confirm('Are you sure you want to log out all guests?')) return;
+        await incrementGlobalSessionId();
+        state.globalSessionId = globalSessionId;
+        updateSessionCard();
+        alert('All guests have been logged out.');
     }
 
     // ==================== CARD OPERATIONS ====================
@@ -1019,12 +1227,14 @@
             return;
         }
         if (checkUserSession()) return;
+        // For guests, also check global session validity
+        if (currentUser.role === 'User') {
+            checkSessionValidity().then(valid => { if (!valid) return; });
+        }
 
-        // Find current index in state.cards (to update correctly)
         const index = state.cards.findIndex(c => c.username === card.username && c.password === card.password);
         if (index === -1) return;
 
-        // Increment view count
         state.cards[index].views = (state.cards[index].views || 0) + 1;
         syncCloud();
 
@@ -1119,7 +1329,6 @@
         if (checkUserSession()) return;
         const t = translations[currentLang];
         const categoryOptions = CONFIG.CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-        // Clear previous temp image and form values
         tempImage = null;
         document.getElementById('popup').innerHTML = `
             <h2>${t.addAccount}</h2>
@@ -1266,11 +1475,11 @@
 
     // ==================== INIT ====================
     document.addEventListener('DOMContentLoaded', () => {
-        detectAdBlock();
-        fetchCloud();
+        detectAdBlockStrict(); // Now blocks access if adblock is on
+        fetchCloud().then(() => loadGlobalSessionId());
         setInterval(fetchCloud, 30000);
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.getElementById('overlay').style.display === 'flex') closePop(); });
-        updateTexts(); // Set initial texts
+        updateTexts();
     });
 </script>
 </body>
