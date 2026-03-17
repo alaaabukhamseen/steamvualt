@@ -9,7 +9,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steamvault Cloud PRO</title>
+    <title>AURAVAULT Cloud PRO</title>
     <!-- jsSHA for TOTP (2FA) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/3.3.0/sha.js" integrity="sha512-8yTzC0e3aEBy4PjFIrkeUz4s8fJ7KQ2vNtJqZ+Mz05KEG9K0lOQKstSMgE2kQdyVruMCWCHJcKSE4l+2s/hB2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
@@ -41,6 +41,7 @@
             --card-bg: var(--secondary);
             --header-bg: var(--secondary);
             --input-bg: var(--secondary-light);
+            --crypto: #f7931a;
         }
 
         body.light-theme {
@@ -64,6 +65,7 @@
             --card-bg: #ffffff;
             --header-bg: #ffffff;
             --input-bg: #f1f5f9;
+            --crypto: #f7931a;
         }
 
         body {
@@ -110,20 +112,6 @@
             padding: 10px;
             font-weight: bold;
             display: none;
-        }
-
-        /* Banner ad placeholder */
-        .ad-banner {
-            width: 100%;
-            min-height: 90px;
-            background: var(--secondary-light);
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
         }
 
         /* Login Screen */
@@ -207,7 +195,7 @@
             flex-direction: column;
         }
 
-        /* Header */
+        /* Header with logo */
         .header {
             display: flex;
             align-items: center;
@@ -221,45 +209,49 @@
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
         .title {
             font-size: 24px;
             color: var(--primary);
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
-        .dashboard {
-            display: none;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+        /* Compact stats bar (visible to all) */
+        .stats-bar {
+            display: flex;
+            flex-wrap: wrap;
             gap: 15px;
-            padding: 15px 20px;
+            padding: 10px 25px;
             background: var(--secondary-light);
             border-bottom: 1px solid var(--border-color);
+            justify-content: space-around;
         }
-        .stat-card {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 8px;
+        .stat-item {
             text-align: center;
-            border-left: 4px solid var(--primary);
-            transition: transform 0.2s;
         }
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-        .stat-card small {
+        .stat-item small {
             color: var(--text-secondary);
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        .stat-card span {
-            font-size: 24px;
+        .stat-item span {
+            font-size: 20px;
             font-weight: bold;
             display: block;
-            margin-top: 5px;
+            margin-top: 2px;
         }
+
         .btn-group {
             display: flex;
             gap: 10px;
@@ -299,6 +291,13 @@
             background: var(--danger);
             color: white;
             display: none;
+        }
+        .btn-crypto {
+            background: var(--crypto);
+            color: #000;
+        }
+        .btn-crypto:hover {
+            filter: brightness(0.9);
         }
         .btn-icon {
             background: transparent;
@@ -449,7 +448,7 @@
             padding: 30px;
             border-radius: 15px;
             width: 90%;
-            max-width: 550px;
+            max-width: 600px;
             max-height: 85vh;
             overflow-y: auto;
             border: 1px solid var(--border-color);
@@ -521,16 +520,16 @@
             flex-shrink: 0;
         }
 
-        .key-manager, .request-manager, .log-viewer, .announcement-editor {
+        .admin-panel-section {
             margin-top: 20px;
             padding-top: 20px;
             border-top: 2px solid var(--border-color);
         }
-        .key-manager h4, .request-manager h4, .log-viewer h4, .announcement-editor h4 {
+        .admin-panel-section h4 {
             margin-bottom: 10px;
             color: var(--text-secondary);
         }
-        .key-list, .request-list, .log-list {
+        .key-list, .request-list, .log-list, .guest-codes-list {
             background: #000000;
             padding: 12px;
             border-radius: 8px;
@@ -539,7 +538,7 @@
             margin-bottom: 15px;
             border: 1px solid var(--border-color);
         }
-        .key-item, .request-item, .log-item {
+        .key-item, .request-item, .log-item, .guest-code-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -549,7 +548,7 @@
             border-radius: 4px;
             font-size: 12px;
         }
-        .key-item button, .request-item button {
+        .key-item button, .request-item button, .guest-code-item button {
             background: none;
             border: none;
             color: var(--danger);
@@ -578,7 +577,7 @@
             font-size: 20px;
         }
 
-        .lang-selector, .theme-toggle {
+        .lang-selector, .theme-toggle, .btn-crypto {
             background: var(--secondary-light);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
@@ -609,7 +608,7 @@
 <!-- LOGIN SCREEN -->
 <div id="loginScreen">
     <div class="login-container">
-        <h1 id="loginTitle">Steamvault Cloud</h1>
+        <h1 id="loginTitle">AURAVAULT Cloud</h1>
         <p id="loginSubtitle">Please log in to access the cloud</p>
         <div id="loginCooldownMessage" style="color: var(--danger); margin-bottom: 10px; display: none;"></div>
         <button class="login-btn admin" onclick="openAdminLogin()" id="adminLoginBtn">
@@ -632,52 +631,31 @@
     <!-- Announcement Banner -->
     <div id="announcementBanner"></div>
 
-    <div class="dashboard" id="dash">
-        <div class="stat-card">
+    <!-- Compact stats bar (visible to everyone) -->
+    <div class="stats-bar">
+        <div class="stat-item">
             <small id="statAccounts">Cloud Accounts</small>
             <span id="countAcc">0</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-item">
             <small id="statRole">Current Role</small>
             <span id="roleDisplay">Guest</span>
         </div>
-        <div class="stat-card">
+        <div class="stat-item">
             <small id="statLastSync">Last Sync</small>
             <span id="lastSync">-</span>
         </div>
-        <!-- Session management card (visible only to head admins) -->
-        <div class="stat-card" id="sessionCard" style="display:none;">
-            <small>Active Guest Sessions</small>
-            <span id="activeSessions">0</span>
-            <button class="btn btn-manage" style="margin-top:10px;" onclick="forceLogoutAllGuests()">Force Logout All</button>
+        <div class="stat-item">
+            <small>Total Visitors</small>
+            <span id="visitorCount">0</span>
         </div>
-        <!-- Requests count for admins -->
-        <div class="stat-card" id="requestCountCard" style="display:none;">
-            <small>Pending Requests</small>
-            <span id="pendingRequests">0</span>
-            <button class="btn btn-manage" style="margin-top:10px;" onclick="openRequestManager()">Manage Requests</button>
-        </div>
-        <!-- Audit Logs button for head admins -->
-        <div class="stat-card" id="auditLogCard" style="display:none;">
-            <small>Audit Logs</small>
-            <button class="btn btn-manage" style="margin-top:10px;" onclick="openAuditLogs()">View Logs</button>
-        </div>
-        <!-- Announcement editor for head admins -->
-        <div class="stat-card" id="announcementCard" style="display:none;">
-            <small>Announcement</small>
-            <button class="btn btn-manage" style="margin-top:10px;" onclick="openAnnouncementEditor()">Edit</button>
-        </div>
-    </div>
-
-    <!-- Banner Ad Placeholder (you can replace with actual ad code) -->
-    <div class="ad-banner" id="adBanner">
-        <div style="color: var(--text-secondary);">Advertisement</div>
     </div>
 
     <div class="header">
-        <div class="title">
-            <span id="appTitle">Steamvault</span>
-            <span class="badge-live">LIVE CLOUD - V3</span>
+        <div class="logo-area">
+            <!-- Square logo 70x70 -->
+            <img src="https://i.ibb.co/chmZW8gW/Gemini-Generated-Image-d0dsf5d0dsf5d0ds.png" alt="AURAVAULT Logo" class="logo" id="siteLogo">
+            <span class="title" id="appTitle">AURAVAULT</span>
         </div>
         <div class="btn-group">
             <select id="langSelect" class="lang-selector">
@@ -685,6 +663,10 @@
                 <option value="ar">🇸🇦 العربية</option>
             </select>
             <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌓 Theme</button>
+            <!-- Donate Button (Crypto) -->
+            <button class="btn-crypto" onclick="openDonatePopup()">💰 Donate Crypto</button>
+            <!-- Admin Panel Button (only for admins) -->
+            <button class="btn btn-admin" id="adminPanelBtn" style="display:none;" onclick="openAdminPanel()">⚙️ Admin Panel</button>
             <!-- Guest request button -->
             <button class="btn btn-guest" id="requestBtn" style="display:none;" onclick="openRequestForm()">📝 Request Account</button>
             <!-- Admin buttons -->
@@ -734,7 +716,7 @@
     // ==================== MULTI-LANGUAGE SUPPORT ====================
     const translations = {
         en: {
-            loginTitle: "Steamvault Cloud",
+            loginTitle: "AURAVAULT Cloud",
             loginSubtitle: "Please log in to access the cloud",
             adminLoginBtn: "🔑 Admin Login",
             guestLoginBtn: "👤 Guest Login",
@@ -742,7 +724,7 @@
             statAccounts: "Cloud Accounts",
             statRole: "Current Role",
             statLastSync: "Last Sync",
-            appTitle: "Steamvault",
+            appTitle: "AURAVAULT",
             logoutText: "Logout",
             searchPlaceholder: "🔍 Search by games or username...",
             addAccount: "➕ Add Account",
@@ -762,7 +744,7 @@
             viewCount: "Views",
             decrypting: "🔒 Decrypting...",
             seconds: "s",
-            adblockMessage: "Please disable your ad blocker or use a VPN to access Steamvault Cloud.",
+            adblockMessage: "Please disable your ad blocker or use a VPN to access AURAVAULT Cloud.",
             cooldownMessage: "Too many failed attempts. Please wait {minutes} minutes.",
             forceLogoutAll: "Force Logout All",
             activeSessions: "Active Guest Sessions",
@@ -772,10 +754,30 @@
             manageRequests: "Manage Requests",
             auditLogs: "Audit Logs",
             announcement: "Announcement",
-            editAnnouncement: "Edit Announcement"
+            editAnnouncement: "Edit Announcement",
+            globalGuestCode: "Global Guest Code",
+            changeGlobalCode: "Change Code",
+            donateTitle: "Donate with Crypto",
+            donateBTC: "Bitcoin",
+            donateETH: "Ethereum",
+            donateLTC: "Litecoin",
+            editDonationAddresses: "Edit Donation Addresses",
+            save: "Save",
+            guestCodes: "Active Guest Codes",
+            noGuestCodes: "No active guest codes",
+            expires: "Expires",
+            revoke: "Revoke",
+            adminPanel: "Admin Panel",
+            requests: "Requests",
+            auditLogsTitle: "Audit Logs",
+            announcementEditor: "Announcement Editor",
+            globalCodeEditor: "Global Guest Code",
+            donationEditor: "Donation Addresses",
+            guestCodesManager: "Guest Codes",
+            forceLogout: "Force Logout All Guests"
         },
         ar: {
-            loginTitle: "ستيم فولت كلاود",
+            loginTitle: "أورافولت كلاود",
             loginSubtitle: "الرجاء تسجيل الدخول للوصول إلى السحابة",
             adminLoginBtn: "🔑 دخول المشرف",
             guestLoginBtn: "👤 دخول الضيف",
@@ -783,7 +785,7 @@
             statAccounts: "الحسابات",
             statRole: "الصلاحية",
             statLastSync: "آخر تحديث",
-            appTitle: "ستيم فولت",
+            appTitle: "أورافولت",
             logoutText: "تسجيل خروج",
             searchPlaceholder: "🔍 ابحث عن الألعاب أو اسم المستخدم...",
             addAccount: "➕ إضافة حساب",
@@ -803,7 +805,7 @@
             viewCount: "مشاهدات",
             decrypting: "🔒 جاري فك التشفير...",
             seconds: "ث",
-            adblockMessage: "الرجاء تعطيل مانع الإعلانات أو استخدام VPN للوصول إلى ستيم فولت كلاود.",
+            adblockMessage: "الرجاء تعطيل مانع الإعلانات أو استخدام VPN للوصول إلى أورافولت كلاود.",
             cooldownMessage: "محاولات فاشلة كثيرة. الرجاء الانتظار {minutes} دقائق.",
             forceLogoutAll: "تسجيل خروج الجميع",
             activeSessions: "الجلسات النشطة",
@@ -813,7 +815,27 @@
             manageRequests: "إدارة الطلبات",
             auditLogs: "سجل المراجعة",
             announcement: "إعلان",
-            editAnnouncement: "تعديل الإعلان"
+            editAnnouncement: "تعديل الإعلان",
+            globalGuestCode: "رمز الضيف العام",
+            changeGlobalCode: "تغيير الرمز",
+            donateTitle: "تبرع بالعملات الرقمية",
+            donateBTC: "بيتكوين",
+            donateETH: "إيثريوم",
+            donateLTC: "لايتكوين",
+            editDonationAddresses: "تعديل عناوين التبرع",
+            save: "حفظ",
+            guestCodes: "رموز الضيف النشطة",
+            noGuestCodes: "لا توجد رموز ضيف نشطة",
+            expires: "تنتهي",
+            revoke: "إلغاء",
+            adminPanel: "لوحة المشرف",
+            requests: "الطلبات",
+            auditLogsTitle: "سجلات المراجعة",
+            announcementEditor: "محرر الإعلانات",
+            globalCodeEditor: "رمز الضيف العام",
+            donationEditor: "عناوين التبرع",
+            guestCodesManager: "رموز الضيف",
+            forceLogout: "تسجيل خروج جميع الضيوف"
         }
     };
     let currentLang = 'en';
@@ -926,6 +948,32 @@
         return true;
     }
 
+    // ==================== VISITOR COUNTER ====================
+    async function incrementVisitorCount() {
+        if (localStorage.getItem('visitorCounted')) return;
+
+        try {
+            const latest = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}/latest`, {
+                headers: { "X-Master-Key": CONFIG.MASTER_KEY }
+            }).then(r => r.json()).then(d => d.record);
+
+            const newCount = (latest.visitorCount || 0) + 1;
+            latest.visitorCount = newCount;
+
+            await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}`, {
+                method: 'PUT',
+                headers: { "Content-Type": "application/json", "X-Master-Key": CONFIG.MASTER_KEY },
+                body: JSON.stringify(latest)
+            });
+
+            state.visitorCount = newCount;
+            document.getElementById('visitorCount').innerText = newCount;
+            localStorage.setItem('visitorCounted', 'true');
+        } catch (e) {
+            console.error('Failed to increment visitor count', e);
+        }
+    }
+
     // ==================== TOTP FUNCTIONS (2FA) ====================
     function base32ToBytes(base32) {
         const base32chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -971,15 +1019,22 @@
         headAdmins: ["21640800"],
         activeCodes: {},
         globalSessionId: 0,
-        requests: [], // { id, username, category, message, userId (guest code), status, createdAt, adminResponse, accountDetails? }
-        logs: [], // { action, adminKey, timestamp, details }
+        requests: [],
+        logs: [],
         announcement: { text: "", enabled: false, updatedAt: null },
-        twoFA: {} // key -> { secret, enabled }
+        twoFA: {},
+        visitorCount: 0,
+        globalGuestCode: "",
+        donationAddresses: {
+            BTC: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+            ETH: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+            LTC: "LbTjMGN7gELw4KbeyQf6cTCq859hD18guE"
+        }
     };
     let currentUser = {
         role: "Guest",
         key: null,
-        twoFAPending: false // for admins needing 2FA code
+        twoFAPending: false
     };
     let userLoginTime = null;
     let tempImage = null;
@@ -1013,32 +1068,9 @@
         safeSetText('addBtn', t.addAccount);
         safeSetText('manageBtn', t.manageKeys);
         safeSetText('requestBtn', t.requestAccount);
-        const sessionCard = document.getElementById('sessionCard');
-        if (sessionCard) {
-            const small = sessionCard.querySelector('small');
-            if (small) small.innerText = t.activeSessions;
-            const button = sessionCard.querySelector('button');
-            if (button) button.innerText = t.forceLogoutAll;
-        }
-        const requestCard = document.getElementById('requestCountCard');
-        if (requestCard) {
-            const small = requestCard.querySelector('small');
-            if (small) small.innerText = t.pendingRequests;
-            const button = requestCard.querySelector('button');
-            if (button) button.innerText = t.manageRequests;
-        }
-        const auditCard = document.getElementById('auditLogCard');
-        if (auditCard) {
-            const small = auditCard.querySelector('small');
-            if (small) small.innerText = t.auditLogs;
-        }
-        const announceCard = document.getElementById('announcementCard');
-        if (announceCard) {
-            const small = announceCard.querySelector('small');
-            if (small) small.innerText = t.announcement;
-            const button = announceCard.querySelector('button');
-            if (button) button.innerText = t.editAnnouncement;
-        }
+        // Admin panel button text
+        const adminPanelBtn = document.getElementById('adminPanelBtn');
+        if (adminPanelBtn) adminPanelBtn.innerText = `⚙️ ${t.adminPanel}`;
     }
 
     document.getElementById('langSelect').addEventListener('change', (e) => {
@@ -1103,7 +1135,13 @@
                 logs: data.record.logs || [],
                 announcement: data.record.announcement || { text: "", enabled: false, updatedAt: null },
                 twoFA: data.record.twoFA || {},
-                lastUpdated: new Date().toISOString()
+                visitorCount: data.record.visitorCount || 0,
+                globalGuestCode: data.record.globalGuestCode || "",
+                donationAddresses: data.record.donationAddresses || {
+                    BTC: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+                    ETH: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                    LTC: "LbTjMGN7gELw4KbeyQf6cTCq859hD18guE"
+                }
             };
             globalSessionId = state.globalSessionId;
 
@@ -1111,10 +1149,16 @@
             updateLastSync();
             updateAnnouncementBanner();
             filterCards();
-            updateSessionCard();
-            updateRequestCountCard();
-            updateAuditLogCard();
-            updateAnnouncementCard();
+            updateStats();
+            // Admin panel button visibility
+            const adminPanelBtn = document.getElementById('adminPanelBtn');
+            if (currentUser.role === 'HeadAdmin' || currentUser.role === 'Admin') {
+                adminPanelBtn.style.display = 'inline-flex';
+            } else {
+                adminPanelBtn.style.display = 'none';
+            }
+
+            incrementVisitorCount();
         } catch (e) {
             console.error('Sync failed:', e);
             document.getElementById('container').innerHTML = '<div style="text-align:center; padding:50px; color:var(--danger);">Failed to load data. Refresh.</div>';
@@ -1157,7 +1201,10 @@
                 requests: state.requests,
                 logs: state.logs,
                 announcement: state.announcement,
-                twoFA: state.twoFA
+                twoFA: state.twoFA,
+                visitorCount: state.visitorCount,
+                globalGuestCode: state.globalGuestCode,
+                donationAddresses: state.donationAddresses
             };
 
             const res = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}`, {
@@ -1186,9 +1233,8 @@
             details
         };
         state.logs.unshift(logEntry);
-        // Keep logs limited (last 100)
         if (state.logs.length > 100) state.logs.pop();
-        syncCloud(); // optionally, could sync later
+        syncCloud();
     }
 
     // ==================== UI RENDERING ====================
@@ -1259,49 +1305,12 @@
     function updateStats() {
         document.getElementById('countAcc').innerText = state.cards?.length || 0;
         document.getElementById('roleDisplay').innerText = currentUser.role;
+        document.getElementById('lastSync').innerText = new Date().toLocaleTimeString();
+        document.getElementById('visitorCount').innerText = state.visitorCount;
     }
 
     function updateLastSync() {
         document.getElementById('lastSync').innerText = new Date().toLocaleTimeString();
-    }
-
-    function updateSessionCard() {
-        const sessionCard = document.getElementById('sessionCard');
-        if (currentUser.role === 'HeadAdmin') {
-            sessionCard.style.display = 'block';
-            document.getElementById('activeSessions').innerText = state.globalSessionId;
-        } else {
-            sessionCard.style.display = 'none';
-        }
-    }
-
-    function updateRequestCountCard() {
-        const requestCard = document.getElementById('requestCountCard');
-        if (currentUser.role === 'Admin' || currentUser.role === 'HeadAdmin') {
-            const pending = state.requests.filter(r => r.status === 'pending').length;
-            requestCard.style.display = 'block';
-            document.getElementById('pendingRequests').innerText = pending;
-        } else {
-            requestCard.style.display = 'none';
-        }
-    }
-
-    function updateAuditLogCard() {
-        const auditCard = document.getElementById('auditLogCard');
-        if (currentUser.role === 'HeadAdmin') {
-            auditCard.style.display = 'block';
-        } else {
-            auditCard.style.display = 'none';
-        }
-    }
-
-    function updateAnnouncementCard() {
-        const announceCard = document.getElementById('announcementCard');
-        if (currentUser.role === 'HeadAdmin') {
-            announceCard.style.display = 'block';
-        } else {
-            announceCard.style.display = 'none';
-        }
     }
 
     function updateAnnouncementBanner() {
@@ -1309,9 +1318,7 @@
         if (state.announcement && state.announcement.enabled && state.announcement.text) {
             banner.innerText = state.announcement.text;
             banner.style.display = 'block';
-        } else {
-            banner.style.display = 'none';
-        }
+        } else banner.style.display = 'none';
     }
 
     // ==================== LOGIN FUNCTIONS ====================
@@ -1350,7 +1357,7 @@
         document.getElementById('popup').innerHTML = `
             <h2 style="margin-bottom:20px;">👤 ${t.guestLoginBtn}</h2>
             <p style="color:var(--text-secondary); margin-bottom:20px;">
-                Enter the 8‑character code you received from the Discord bot.
+                Enter your 8‑character code from Discord, or use the global guest code.
             </p>
             <input type="text" id="guestCode" placeholder="e.g. X7k9P2mQ" maxlength="8" autocomplete="off">
             <button class="btn btn-guest" style="width:100%; margin-bottom:10px;" onclick="verifyGuest()">${t.guestLoginBtn}</button>
@@ -1365,11 +1372,8 @@
             rateLimit.addAttempt('admin');
             return alert('Please enter a key.');
         }
-        // Check if it's a head admin or admin
         if (state.headAdmins.includes(key) || state.admins.includes(key)) {
-            // Check 2FA
             if (state.twoFA[key] && state.twoFA[key].enabled) {
-                // Store key temporarily and ask for 2FA code
                 currentUser.twoFAPending = key;
                 document.getElementById('popup').innerHTML = `
                     <h2>🔐 Two-Factor Authentication</h2>
@@ -1380,7 +1384,6 @@
                 `;
                 return;
             } else {
-                // No 2FA, proceed
                 finalizeAdminLogin(key);
             }
         } else {
@@ -1418,48 +1421,54 @@
     }
 
     function verifyGuest() {
-        const code = document.getElementById('guestCode')?.value.trim();
+        const code = document.getElementById('guestCode')?.value.trim().toUpperCase();
         if (!code || code.length !== 8) {
             rateLimit.addAttempt('guest');
             return alert('Please enter an 8‑character code.');
         }
 
+        // Check per-user verified code
         const codeData = state.activeCodes[code];
-        if (!codeData) {
-            rateLimit.addAttempt('guest');
-            return alert('Invalid or expired code.');
-        }
-
-        if (codeData.createdAt) {
-            const age = Date.now() - new Date(codeData.createdAt).getTime();
-            if (age > 24 * 60 * 60 * 1000) {
-                rateLimit.addAttempt('guest');
-                alert('Code has expired. Please get a new one from the Discord bot.');
-                return;
+        if (codeData && (codeData.status === "VERIFIED" || codeData === "VERIFIED")) {
+            if (codeData.createdAt) {
+                const age = Date.now() - new Date(codeData.createdAt).getTime();
+                if (age > 24 * 60 * 60 * 1000) {
+                    rateLimit.addAttempt('guest');
+                    alert('Code has expired. Please get a new one from the Discord bot.');
+                    return;
+                }
             }
-        }
-
-        if (codeData.status === "VERIFIED" || codeData === "VERIFIED") {
             rateLimit.reset('guest');
             currentUser = { role: "User", key: code };
             userLoginTime = Date.now();
             localStorage.setItem('guestSessionId', globalSessionId);
             enableApp(false);
             closePop();
-        } else {
-            rateLimit.addAttempt('guest');
-            alert('Invalid code.');
+            return;
         }
+
+        // Check global guest code
+        if (state.globalGuestCode && code === state.globalGuestCode) {
+            rateLimit.reset('guest');
+            currentUser = { role: "User", key: 'global' };
+            userLoginTime = Date.now();
+            localStorage.setItem('guestSessionId', globalSessionId);
+            enableApp(false);
+            closePop();
+            return;
+        }
+
+        rateLimit.addAttempt('guest');
+        alert('Invalid code.');
     }
 
     function enableApp(isHead) {
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
-        document.getElementById('dash').style.display = "grid";
-        document.getElementById('logoutBtn').style.display = "inline-flex";
         if (currentUser.role === "Admin" || currentUser.role === "HeadAdmin") {
             document.getElementById('addBtn').style.display = "inline-flex";
-            document.getElementById('requestBtn').style.display = "none"; // admins don't request
+            document.getElementById('requestBtn').style.display = "none";
+            document.getElementById('adminPanelBtn').style.display = "inline-flex";
             if (isHead) {
                 document.getElementById('manageBtn').style.display = "inline-flex";
             } else {
@@ -1469,12 +1478,9 @@
             document.getElementById('addBtn').style.display = "none";
             document.getElementById('manageBtn').style.display = "none";
             document.getElementById('requestBtn').style.display = "inline-flex";
+            document.getElementById('adminPanelBtn').style.display = "none";
         }
         updateStats();
-        updateSessionCard();
-        updateRequestCountCard();
-        updateAuditLogCard();
-        updateAnnouncementCard();
         updateAnnouncementBanner();
     }
 
@@ -1491,10 +1497,7 @@
         document.getElementById('manageBtn').style.display = "none";
         document.getElementById('requestBtn').style.display = "none";
         document.getElementById('logoutBtn').style.display = "none";
-        document.getElementById('sessionCard').style.display = 'none';
-        document.getElementById('requestCountCard').style.display = 'none';
-        document.getElementById('auditLogCard').style.display = 'none';
-        document.getElementById('announcementCard').style.display = 'none';
+        document.getElementById('adminPanelBtn').style.display = "none";
         closePop();
     }
 
@@ -1503,9 +1506,382 @@
         if (!confirm('Are you sure you want to log out all guests?')) return;
         await incrementGlobalSessionId();
         state.globalSessionId = globalSessionId;
-        updateSessionCard();
         addLog('Force logout all guests', `Global session ID incremented to ${globalSessionId}`);
         alert('All guests have been logged out.');
+    }
+
+    // ==================== ADMIN PANEL ====================
+    function openAdminPanel() {
+        if (currentUser.role !== 'Admin' && currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        const isHead = currentUser.role === 'HeadAdmin';
+        const pendingCount = state.requests.filter(r => r.status === 'pending').length;
+        const guestCodesCount = Object.keys(state.activeCodes).length;
+
+        let html = `<h2>⚙️ ${t.adminPanel}</h2>`;
+
+        // Requests section
+        html += `<div class="admin-panel-section">
+            <h4>${t.requests} (${pendingCount} ${t.pendingRequests})</h4>
+            <button class="btn btn-manage" style="width:100%;" onclick="openRequestManager()">${t.manageRequests}</button>
+        </div>`;
+
+        // Audit Logs (Head only)
+        if (isHead) {
+            html += `<div class="admin-panel-section">
+                <h4>${t.auditLogsTitle}</h4>
+                <button class="btn btn-manage" style="width:100%;" onclick="openAuditLogs()">${t.auditLogsTitle}</button>
+            </div>`;
+        }
+
+        // Announcement Editor (Head only)
+        if (isHead) {
+            html += `<div class="admin-panel-section">
+                <h4>${t.announcementEditor}</h4>
+                <button class="btn btn-admin" style="width:100%;" onclick="openAnnouncementEditor()">${t.editAnnouncement}</button>
+            </div>`;
+        }
+
+        // Global Guest Code (Head only)
+        if (isHead) {
+            html += `<div class="admin-panel-section">
+                <h4>${t.globalCodeEditor}</h4>
+                <p>Current: <strong>${state.globalGuestCode || '(not set)'}</strong></p>
+                <button class="btn btn-admin" style="width:100%;" onclick="openGlobalGuestCodeEditor()">${t.changeGlobalCode}</button>
+            </div>`;
+        }
+
+        // Donation Addresses (Head only)
+        if (isHead) {
+            html += `<div class="admin-panel-section">
+                <h4>${t.donationEditor}</h4>
+                <button class="btn btn-crypto" style="width:100%;" onclick="openDonationEditor()">${t.editDonationAddresses}</button>
+            </div>`;
+        }
+
+        // Guest Codes Manager (Head only)
+        if (isHead) {
+            html += `<div class="admin-panel-section">
+                <h4>${t.guestCodesManager} (${guestCodesCount})</h4>
+                <button class="btn btn-manage" style="width:100%;" onclick="openGuestCodesManager()">${t.manageRequests}</button>
+            </div>`;
+        }
+
+        // Force Logout All (Head only)
+        if (isHead) {
+            html += `<div class="admin-panel-section">
+                <h4>${t.forceLogout}</h4>
+                <button class="btn btn-danger" style="width:100%; background:var(--danger);" onclick="forceLogoutAllGuests()">${t.forceLogoutAll}</button>
+            </div>`;
+        }
+
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        document.getElementById('popup').innerHTML = html;
+        showPop();
+    }
+
+    // ==================== DONATION ADDRESS EDITOR ====================
+    function openDonationEditor() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        document.getElementById('popup').innerHTML = `
+            <h2>${t.editDonationAddresses}</h2>
+            <label>Bitcoin (BTC)</label>
+            <input type="text" id="btcAddress" value="${state.donationAddresses.BTC}" placeholder="BTC address">
+            <label>Ethereum (ETH)</label>
+            <input type="text" id="ethAddress" value="${state.donationAddresses.ETH}" placeholder="ETH address">
+            <label>Litecoin (LTC)</label>
+            <input type="text" id="ltcAddress" value="${state.donationAddresses.LTC}" placeholder="LTC address">
+            <button class="btn btn-admin" style="width:100%; margin:10px 0;" onclick="saveDonationAddresses()">${t.save}</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
+        showPop();
+    }
+
+    function saveDonationAddresses() {
+        const btc = document.getElementById('btcAddress')?.value.trim();
+        const eth = document.getElementById('ethAddress')?.value.trim();
+        const ltc = document.getElementById('ltcAddress')?.value.trim();
+        if (!btc || !eth || !ltc) {
+            return alert('All fields are required.');
+        }
+        state.donationAddresses = { BTC: btc, ETH: eth, LTC: ltc };
+        addLog('Donation addresses updated', `BTC: ${btc}, ETH: ${eth}, LTC: ${ltc}`);
+        syncCloud();
+        closePop();
+        alert('Donation addresses saved.');
+    }
+
+    // ==================== DONATE POPUP ====================
+    function openDonatePopup() {
+        const t = translations[currentLang];
+        const addresses = state.donationAddresses;
+        const isHead = currentUser.role === 'HeadAdmin';
+        let html = `<h2>${t.donateTitle}</h2>`;
+        html += `<div style="margin:20px 0;">`;
+        html += `<div style="margin-bottom:15px;"><strong>${t.donateBTC}:</strong><div class="copy-row"><span>${addresses.BTC}</span><button class="btn" onclick="copyToClipboard('${addresses.BTC}')">${t.copy}</button></div></div>`;
+        html += `<div style="margin-bottom:15px;"><strong>${t.donateETH}:</strong><div class="copy-row"><span>${addresses.ETH}</span><button class="btn" onclick="copyToClipboard('${addresses.ETH}')">${t.copy}</button></div></div>`;
+        html += `<div style="margin-bottom:15px;"><strong>${t.donateLTC}:</strong><div class="copy-row"><span>${addresses.LTC}</span><button class="btn" onclick="copyToClipboard('${addresses.LTC}')">${t.copy}</button></div></div>`;
+        html += `</div>`;
+        if (isHead) {
+            html += `<button class="btn btn-admin" style="width:100%; margin-bottom:10px;" onclick="openDonationEditor()">✏️ ${t.editDonationAddresses}</button>`;
+        }
+        html += `<button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        document.getElementById('popup').innerHTML = html;
+        showPop();
+    }
+
+    // ==================== GLOBAL GUEST CODE EDITOR ====================
+    function openGlobalGuestCodeEditor() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        document.getElementById('popup').innerHTML = `
+            <h2>${t.globalCodeEditor}</h2>
+            <p>Set a shared 8‑character code that all guests can use.</p>
+            <input type="text" id="newGlobalCode" placeholder="e.g. DAILY123" maxlength="8" value="${state.globalGuestCode || ''}">
+            <button class="btn btn-admin" style="width:100%; margin:10px 0;" onclick="saveGlobalGuestCode()">${t.save}</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
+        showPop();
+    }
+
+    function saveGlobalGuestCode() {
+        const newCode = document.getElementById('newGlobalCode')?.value.trim().toUpperCase();
+        if (newCode && newCode.length !== 8) {
+            return alert('Code must be exactly 8 characters.');
+        }
+        state.globalGuestCode = newCode || '';
+        addLog('Global guest code changed', newCode);
+        syncCloud();
+        closePop();
+        alert('Global guest code updated.');
+    }
+
+    // ==================== GUEST CODES MANAGER ====================
+    function openGuestCodesManager() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        const codes = Object.entries(state.activeCodes);
+        let html = `<h2>${t.guestCodesManager}</h2>`;
+        if (codes.length === 0) {
+            html += `<p>${t.noGuestCodes}</p>`;
+        } else {
+            html += '<div class="guest-codes-list">';
+            codes.forEach(([code, data]) => {
+                const createdAt = data.createdAt ? new Date(data.createdAt).toLocaleString() : 'unknown';
+                const expiresAt = data.createdAt ? new Date(new Date(data.createdAt).getTime() + 24*60*60*1000).toLocaleString() : 'unknown';
+                html += `
+                    <div class="guest-code-item">
+                        <div>
+                            <strong>${code}</strong><br>
+                            <small>${t.expires}: ${expiresAt}</small>
+                        </div>
+                        <button onclick="revokeGuestCode('${code}')">✖</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        document.getElementById('popup').innerHTML = html;
+        showPop();
+    }
+
+    function revokeGuestCode(code) {
+        if (!confirm(`Revoke guest code ${code}?`)) return;
+        delete state.activeCodes[code];
+        addLog('Guest code revoked', code);
+        syncCloud();
+        openGuestCodesManager(); // refresh
+    }
+
+    // ==================== REQUEST MANAGER (unchanged, but callable) ====================
+    function openRequestManager() {
+        if (!['Admin','HeadAdmin'].includes(currentUser.role)) return alert('Admins only.');
+        const pending = state.requests.filter(r => r.status === 'pending');
+        const t = translations[currentLang];
+        let html = `<h2>${t.manageRequests}</h2>`;
+        if (pending.length === 0) {
+            html += '<p>No pending requests.</p>';
+        } else {
+            html += '<div class="request-list">';
+            pending.forEach(req => {
+                html += `
+                    <div class="request-item">
+                        <div><strong>${req.username}</strong> (${req.category})<br>${req.message}<br><small>by ${req.userId}</small></div>
+                        <div>
+                            <button class="btn btn-success" onclick="approveRequest('${req.id}')">✅ Approve</button>
+                            <button class="btn btn-danger" onclick="denyRequest('${req.id}')">❌ Deny</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        document.getElementById('popup').innerHTML = html;
+        showPop();
+    }
+
+    // ==================== REQUEST APPROVAL FUNCTIONS ====================
+    function approveRequest(id) {
+        const req = state.requests.find(r => r.id === id);
+        if (!req) return;
+        document.getElementById('popup').innerHTML = `
+            <h2>Approve Request</h2>
+            <p>Provide the account details for ${req.username} (${req.category})</p>
+            <input type="text" id="approveUsername" placeholder="Username" value="${req.username !== 'Not specified' ? req.username : ''}">
+            <input type="text" id="approvePassword" placeholder="Password">
+            <textarea id="approveDescription" placeholder="Games / description">${req.message}</textarea>
+            <button class="btn btn-success" style="width:100%; margin-bottom:10px;" onclick="submitApproval('${req.id}')">Create Account</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="openRequestManager()">Back</button>
+        `;
+    }
+
+    function submitApproval(id) {
+        const username = document.getElementById('approveUsername')?.value.trim();
+        const password = document.getElementById('approvePassword')?.value.trim();
+        const description = document.getElementById('approveDescription')?.value.trim();
+        if (!username || !password) return alert('Username and password required.');
+
+        const req = state.requests.find(r => r.id === id);
+        if (!req) return;
+
+        const newCard = {
+            username, password, description: description || req.message, category: req.category,
+            health: 'Good', views: 0, image: null, addedBy: currentUser.key, addedAt: new Date().toISOString()
+        };
+        state.cards.unshift(newCard);
+        req.status = 'approved';
+        req.adminResponse = { approvedBy: currentUser.key, at: new Date().toISOString(), accountUsername: username };
+        addLog('Request approved', `Request ${id} for ${username}`);
+        syncCloud();
+        closePop();
+        alert('Request approved and account added.');
+    }
+
+    function denyRequest(id) {
+        const req = state.requests.find(r => r.id === id);
+        if (!req) return;
+        req.status = 'denied';
+        addLog('Request denied', `Request ${id}`);
+        syncCloud();
+        openRequestManager(); // refresh
+    }
+
+    // ==================== KEY MANAGER (unchanged) ====================
+    function openKeyManager() {
+        if (currentUser.role !== "HeadAdmin") return alert('Head Admin only.');
+        const t = translations[currentLang];
+        document.getElementById('popup').innerHTML = `
+            <h2>🔑 ${t.manageKeys}</h2>
+            <div class="key-manager">
+                <h4>Admins (${state.admins.length})</h4>
+                <div class="key-list">
+                    ${state.admins.map(k => `
+                        <div class="key-item">
+                            <span>${k}</span>
+                            <span>${state.twoFA[k] && state.twoFA[k].enabled ? '🔐' : '🔓'} <button onclick="toggle2FA('${k}')">Toggle 2FA</button> ${state.admins.length>1?`<button onclick="removeKey('admins','${k}')">✖</button>`:'<span>(min)</span>'}</span>
+                        </div>`).join('')}
+                </div>
+                <input id="newAdminKey" placeholder="New admin key"><button class="btn btn-admin" style="width:100%; margin-top:10px;" onclick="addKey('admins')">Add</button>
+            </div>
+            <div class="key-manager">
+                <h4>Head Admins (${state.headAdmins.length})</h4>
+                <div class="key-list">
+                    ${state.headAdmins.map(k => `
+                        <div class="key-item">
+                            <span>${k}</span>
+                            <span>${state.twoFA[k] && state.twoFA[k].enabled ? '🔐' : '🔓'} <button onclick="toggle2FA('${k}')">Toggle 2FA</button> ${state.headAdmins.length>1?`<button onclick="removeKey('headAdmins','${k}')">✖</button>`:'<span>(min)</span>'}</span>
+                        </div>`).join('')}
+                </div>
+                <input id="newHeadKey" placeholder="New head admin key"><button class="btn" style="width:100%; background:var(--head); color:#000;" onclick="addKey('headAdmins')">Add</button>
+            </div>
+            <button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        showPop();
+    }
+
+    function toggle2FA(key) {
+        if (!state.twoFA[key]) {
+            const secret = generateBase32Secret();
+            state.twoFA[key] = { secret, enabled: true };
+            alert(`Scan this secret in Google Authenticator:\n${secret}\n(For testing, you can enter the code manually.)`);
+        } else {
+            state.twoFA[key].enabled = !state.twoFA[key].enabled;
+        }
+        addLog('2FA toggled', `Key ${key} now ${state.twoFA[key].enabled ? 'enabled' : 'disabled'}`);
+        syncCloud();
+        openKeyManager();
+    }
+
+    function generateBase32Secret(length = 16) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        let secret = '';
+        for (let i = 0; i < length; i++) secret += chars[Math.floor(Math.random() * chars.length)];
+        return secret;
+    }
+
+    async function addKey(type) {
+        const input = document.getElementById(type==='admins'?'newAdminKey':'newHeadKey');
+        const val = input?.value.trim();
+        if (!val) return alert('Enter a key.');
+        if (state[type].includes(val)) return alert('Already exists.');
+        state[type].push(val);
+        addLog('Key added', `${type} key ${val}`);
+        await syncCloud();
+        openKeyManager();
+    }
+
+    async function removeKey(type, key) {
+        if (state[type].length <= 1) return alert('Cannot remove last key.');
+        if (!confirm('Remove this key?')) return;
+        state[type] = state[type].filter(k => k !== key);
+        addLog('Key removed', `${type} key ${key}`);
+        await syncCloud();
+        openKeyManager();
+    }
+
+    // ==================== AUDIT LOGS ====================
+    function openAuditLogs() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        let html = `<h2>${t.auditLogsTitle}</h2>`;
+        if (state.logs.length === 0) {
+            html += '<p>No logs yet.</p>';
+        } else {
+            html += '<div class="log-list">';
+            state.logs.slice(0, 50).forEach(log => {
+                html += `<div class="log-item"><small>${new Date(log.timestamp).toLocaleString()}</small> <strong>${log.action}</strong> by ${log.adminKey} ${log.details ? '- ' + log.details : ''}</div>`;
+            });
+            html += '</div>';
+        }
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        document.getElementById('popup').innerHTML = html;
+        showPop();
+    }
+
+    // ==================== ANNOUNCEMENT EDITOR ====================
+    function openAnnouncementEditor() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        document.getElementById('popup').innerHTML = `
+            <h2>${t.announcementEditor}</h2>
+            <textarea id="announceText" rows="3" placeholder="Announcement text">${state.announcement.text || ''}</textarea>
+            <label><input type="checkbox" id="announceEnabled" ${state.announcement.enabled ? 'checked' : ''}> Enable banner</label>
+            <button class="btn btn-admin" style="width:100%; margin:10px 0;" onclick="saveAnnouncement()">${t.save}</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
+        showPop();
+    }
+
+    function saveAnnouncement() {
+        const text = document.getElementById('announceText')?.value.trim();
+        const enabled = document.getElementById('announceEnabled')?.checked;
+        state.announcement = { text, enabled, updatedAt: new Date().toISOString() };
+        addLog('Announcement updated', text);
+        syncCloud();
+        updateAnnouncementBanner();
+        closePop();
     }
 
     // ==================== CARD OPERATIONS ====================
@@ -1532,9 +1908,7 @@
         const healthToggle = canManage ? `
             <div style="margin:15px 0;">
                 <label>${t.category}</label>
-                <select id="editCategory">
-                    ${healthOptions}
-                </select>
+                <select id="editCategory">${healthOptions}</select>
                 <label>Health</label>
                 <select id="editHealth">
                     <option value="Good" ${state.cards[index].health === 'Good' ? 'selected' : ''}>${t.healthGood}</option>
@@ -1545,9 +1919,7 @@
         ` : '';
 
         document.getElementById('popup').innerHTML = `
-            <img src="${state.cards[index].image || 'https://via.placeholder.com/500x250/1e293b/00f7ff?text=No+Image'}" 
-                 style="width:100%; border-radius:10px; margin-bottom:15px;"
-                 onerror="this.src='https://via.placeholder.com/500x250/1e293b/00f7ff?text=Error'">
+            <img src="${state.cards[index].image || 'https://via.placeholder.com/500x250/1e293b/00f7ff?text=No+Image'}" style="width:100%; border-radius:10px; margin-bottom:15px;" onerror="this.src='https://via.placeholder.com/500x250/1e293b/00f7ff?text=Error'">
             <h2>${escapeHtml(state.cards[index].username)}</h2>
             <p style="color:var(--text-secondary); margin-bottom:20px;">${escapeHtml(state.cards[index].description || 'No games.')}</p>
             <div><strong>Category:</strong> ${state.cards[index].category}</div>
@@ -1624,9 +1996,7 @@
             <input type="text" id="username" placeholder="${t.username} *" value="">
             <input type="text" id="password" placeholder="${t.password} *" value="">
             <textarea id="description" placeholder="${t.description}" rows="3"></textarea>
-            <select id="category">
-                ${categoryOptions}
-            </select>
+            <select id="category">${categoryOptions}</select>
             <button class="btn btn-admin" style="width:100%; margin-bottom:10px;" onclick="saveCard()">${t.upload}</button>
             <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
         `;
@@ -1650,17 +2020,9 @@
         if (!username || !password) return alert('Username and password required.');
 
         const newCard = {
-            username,
-            password,
-            description: description || 'No games',
-            category: category || 'Steam',
-            health: 'Good',
-            views: 0,
-            image: tempImage,
-            addedBy: currentUser.key,
-            addedAt: new Date().toISOString()
+            username, password, description: description || 'No games', category: category || 'Steam',
+            health: 'Good', views: 0, image: tempImage, addedBy: currentUser.key, addedAt: new Date().toISOString()
         };
-
         state.cards.unshift(newCard);
         tempImage = null;
         closePop();
@@ -1688,9 +2050,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ embeds: [embed] })
             });
-        } catch (e) {
-            console.error('Webhook failed:', e);
-        }
+        } catch (e) { console.error('Webhook failed:', e); }
     }
 
     async function deleteCard(index) {
@@ -1702,7 +2062,6 @@
         await syncCloud();
     }
 
-    // ==================== ACCOUNT REQUEST SYSTEM ====================
     function openRequestForm() {
         if (currentUser.role !== 'User') return alert('Only guests can request accounts.');
         const t = translations[currentLang];
@@ -1711,9 +2070,7 @@
             <h2>${t.requestAccount}</h2>
             <p>Tell us which game or category you need.</p>
             <input type="text" id="requestUsername" placeholder="Desired account name (optional)">
-            <select id="requestCategory">
-                ${categoryOptions}
-            </select>
+            <select id="requestCategory">${categoryOptions}</select>
             <textarea id="requestMessage" placeholder="Additional details..." rows="3"></textarea>
             <button class="btn btn-guest" style="width:100%; margin-bottom:10px;" onclick="submitRequest()">Submit Request</button>
             <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
@@ -1742,221 +2099,6 @@
         syncCloud();
         closePop();
         alert('Request submitted! An admin will review it.');
-    }
-
-    function openRequestManager() {
-        if (!['Admin','HeadAdmin'].includes(currentUser.role)) return alert('Admins only.');
-        const pending = state.requests.filter(r => r.status === 'pending');
-        const t = translations[currentLang];
-        let html = `<h2>${t.manageRequests}</h2>`;
-        if (pending.length === 0) {
-            html += '<p>No pending requests.</p>';
-        } else {
-            html += '<div class="request-list">';
-            pending.forEach(req => {
-                html += `
-                    <div class="request-item">
-                        <div><strong>${req.username}</strong> (${req.category})<br>${req.message}<br><small>by ${req.userId}</small></div>
-                        <div>
-                            <button class="btn btn-success" onclick="approveRequest('${req.id}')">✅ Approve</button>
-                            <button class="btn btn-danger" onclick="denyRequest('${req.id}')">❌ Deny</button>
-                        </div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-        }
-        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
-        document.getElementById('popup').innerHTML = html;
-        showPop();
-    }
-
-    function approveRequest(id) {
-        const req = state.requests.find(r => r.id === id);
-        if (!req) return;
-        // Ask admin to provide account details
-        document.getElementById('popup').innerHTML = `
-            <h2>Approve Request</h2>
-            <p>Provide the account details for ${req.username} (${req.category})</p>
-            <input type="text" id="approveUsername" placeholder="Username" value="${req.username !== 'Not specified' ? req.username : ''}">
-            <input type="text" id="approvePassword" placeholder="Password">
-            <textarea id="approveDescription" placeholder="Games / description">${req.message}</textarea>
-            <button class="btn btn-success" style="width:100%; margin-bottom:10px;" onclick="submitApproval('${req.id}')">Create Account</button>
-            <button class="btn" style="width:100%; background:#475569;" onclick="openRequestManager()">Back</button>
-        `;
-    }
-
-    function submitApproval(id) {
-        const username = document.getElementById('approveUsername')?.value.trim();
-        const password = document.getElementById('approvePassword')?.value.trim();
-        const description = document.getElementById('approveDescription')?.value.trim();
-        if (!username || !password) return alert('Username and password required.');
-
-        const req = state.requests.find(r => r.id === id);
-        if (!req) return;
-
-        // Create new account
-        const newCard = {
-            username,
-            password,
-            description: description || req.message,
-            category: req.category,
-            health: 'Good',
-            views: 0,
-            image: null,
-            addedBy: currentUser.key,
-            addedAt: new Date().toISOString()
-        };
-        state.cards.unshift(newCard);
-
-        // Update request status
-        req.status = 'approved';
-        req.adminResponse = { approvedBy: currentUser.key, at: new Date().toISOString(), accountUsername: username };
-
-        addLog('Request approved', `Request ${id} for ${username}`);
-        syncCloud();
-        closePop();
-        alert('Request approved and account added.');
-    }
-
-    function denyRequest(id) {
-        const req = state.requests.find(r => r.id === id);
-        if (!req) return;
-        req.status = 'denied';
-        addLog('Request denied', `Request ${id}`);
-        syncCloud();
-        openRequestManager(); // refresh
-    }
-
-    // ==================== KEY MANAGER (with 2FA) ====================
-    function openKeyManager() {
-        if (currentUser.role !== "HeadAdmin") return alert('Head Admin only.');
-        const t = translations[currentLang];
-        // Generate 2FA secret for a new admin if needed
-        document.getElementById('popup').innerHTML = `
-            <h2>🔑 ${t.manageKeys}</h2>
-            <div class="key-manager">
-                <h4>Admins (${state.admins.length})</h4>
-                <div class="key-list">
-                    ${state.admins.map(k => `
-                        <div class="key-item">
-                            <span>${k}</span>
-                            <span>
-                                ${state.twoFA[k] && state.twoFA[k].enabled ? '🔐' : '🔓'}
-                                <button onclick="toggle2FA('${k}')">Toggle 2FA</button>
-                                ${state.admins.length>1?`<button onclick="removeKey('admins','${k}')">✖</button>`:'<span>(min)</span>'}
-                            </span>
-                        </div>
-                    `).join('')}
-                </div>
-                <input id="newAdminKey" placeholder="New admin key"><button class="btn btn-admin" style="width:100%; margin-top:10px;" onclick="addKey('admins')">Add</button>
-            </div>
-            <div class="key-manager">
-                <h4>Head Admins (${state.headAdmins.length})</h4>
-                <div class="key-list">
-                    ${state.headAdmins.map(k => `
-                        <div class="key-item">
-                            <span>${k}</span>
-                            <span>
-                                ${state.twoFA[k] && state.twoFA[k].enabled ? '🔐' : '🔓'}
-                                <button onclick="toggle2FA('${k}')">Toggle 2FA</button>
-                                ${state.headAdmins.length>1?`<button onclick="removeKey('headAdmins','${k}')">✖</button>`:'<span>(min)</span>'}
-                            </span>
-                        </div>
-                    `).join('')}
-                </div>
-                <input id="newHeadKey" placeholder="New head admin key"><button class="btn" style="width:100%; background:var(--head); color:#000;" onclick="addKey('headAdmins')">Add</button>
-            </div>
-            <button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>
-        `;
-        showPop();
-    }
-
-    function toggle2FA(key) {
-        if (!state.twoFA[key]) {
-            // Generate a new secret
-            const secret = generateBase32Secret();
-            state.twoFA[key] = { secret, enabled: true };
-            // Show QR code (simplified – show secret)
-            alert(`Scan this secret in Google Authenticator:\n${secret}\n(For testing, you can enter the code manually.)`);
-        } else {
-            state.twoFA[key].enabled = !state.twoFA[key].enabled;
-        }
-        addLog('2FA toggled', `Key ${key} now ${state.twoFA[key].enabled ? 'enabled' : 'disabled'}`);
-        syncCloud();
-        openKeyManager(); // refresh
-    }
-
-    function generateBase32Secret(length = 16) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let secret = '';
-        for (let i = 0; i < length; i++) {
-            secret += chars[Math.floor(Math.random() * chars.length)];
-        }
-        return secret;
-    }
-
-    async function addKey(type) {
-        const input = document.getElementById(type==='admins'?'newAdminKey':'newHeadKey');
-        const val = input?.value.trim();
-        if (!val) return alert('Enter a key.');
-        if (state[type].includes(val)) return alert('Already exists.');
-        state[type].push(val);
-        addLog('Key added', `${type} key ${val}`);
-        await syncCloud();
-        openKeyManager();
-    }
-
-    async function removeKey(type, key) {
-        if (state[type].length <= 1) return alert('Cannot remove last key.');
-        if (!confirm('Remove this key?')) return;
-        state[type] = state[type].filter(k => k !== key);
-        addLog('Key removed', `${type} key ${key}`);
-        await syncCloud();
-        openKeyManager();
-    }
-
-    // ==================== AUDIT LOGS ====================
-    function openAuditLogs() {
-        if (currentUser.role !== 'HeadAdmin') return;
-        const t = translations[currentLang];
-        let html = `<h2>${t.auditLogs}</h2>`;
-        if (state.logs.length === 0) {
-            html += '<p>No logs yet.</p>';
-        } else {
-            html += '<div class="log-list">';
-            state.logs.slice(0, 50).forEach(log => {
-                html += `<div class="log-item"><small>${new Date(log.timestamp).toLocaleString()}</small> <strong>${log.action}</strong> by ${log.adminKey} ${log.details ? '- ' + log.details : ''}</div>`;
-            });
-            html += '</div>';
-        }
-        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
-        document.getElementById('popup').innerHTML = html;
-        showPop();
-    }
-
-    // ==================== ANNOUNCEMENT EDITOR ====================
-    function openAnnouncementEditor() {
-        if (currentUser.role !== 'HeadAdmin') return;
-        const t = translations[currentLang];
-        document.getElementById('popup').innerHTML = `
-            <h2>${t.editAnnouncement}</h2>
-            <textarea id="announceText" rows="3" placeholder="Announcement text">${state.announcement.text || ''}</textarea>
-            <label><input type="checkbox" id="announceEnabled" ${state.announcement.enabled ? 'checked' : ''}> Enable banner</label>
-            <button class="btn btn-admin" style="width:100%; margin:10px 0;" onclick="saveAnnouncement()">Save</button>
-            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
-        `;
-        showPop();
-    }
-
-    function saveAnnouncement() {
-        const text = document.getElementById('announceText')?.value.trim();
-        const enabled = document.getElementById('announceEnabled')?.checked;
-        state.announcement = { text, enabled, updatedAt: new Date().toISOString() };
-        addLog('Announcement updated', text);
-        syncCloud();
-        updateAnnouncementBanner();
-        closePop();
     }
 
     // ==================== UTILITIES ====================
