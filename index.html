@@ -10,8 +10,10 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steamvault Cloud PRO</title>
+    <!-- jsSHA for TOTP (2FA) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/3.3.0/sha.js" integrity="sha512-8yTzC0e3aEBy4PjFIrkeUz4s8fJ7KQ2vNtJqZ+Mz05KEG9K0lOQKstSMgE2kQdyVruMCWCHJcKSE4l+2s/hB2w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
-        /* ... (keep all existing styles) ... */
+        /* ========== STYLES ========== */
         * {
             margin: 0;
             padding: 0;
@@ -73,7 +75,7 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        /* Adblock full‑page overlay */
+        /* Adblock full‑page overlay (with VPN message) */
         #adblockOverlay {
             position: fixed;
             top: 0;
@@ -100,6 +102,16 @@
             margin-bottom: 20px;
         }
 
+        /* Announcement banner */
+        #announcementBanner {
+            background: var(--warning);
+            color: black;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
         /* Banner ad placeholder */
         .ad-banner {
             width: 100%;
@@ -112,9 +124,6 @@
             color: var(--text-secondary);
             border: 1px dashed var(--border-color);
             border-radius: 8px;
-        }
-        .ad-banner iframe, .ad-banner div {
-            max-width: 100%;
         }
 
         /* Login Screen */
@@ -300,9 +309,9 @@
             padding: 5px;
         }
 
-        /* Search */
-        .search-container {
-            padding: 15px 25px;
+        /* Search and filter bar */
+        .search-filter-container {
+            padding: 15px 25px 5px 25px;
         }
         #searchInput {
             width: 100%;
@@ -312,6 +321,26 @@
             background: var(--input-bg);
             color: var(--text-primary);
             font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--secondary);
+            color: var(--text-primary);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: var(--primary);
+            color: black;
+            border-color: var(--primary);
         }
 
         /* Cards */
@@ -492,25 +521,25 @@
             flex-shrink: 0;
         }
 
-        .key-manager {
+        .key-manager, .request-manager, .log-viewer, .announcement-editor {
             margin-top: 20px;
             padding-top: 20px;
             border-top: 2px solid var(--border-color);
         }
-        .key-manager h4 {
+        .key-manager h4, .request-manager h4, .log-viewer h4, .announcement-editor h4 {
             margin-bottom: 10px;
             color: var(--text-secondary);
         }
-        .key-list {
+        .key-list, .request-list, .log-list {
             background: #000000;
             padding: 12px;
             border-radius: 8px;
-            max-height: 120px;
+            max-height: 200px;
             overflow-y: auto;
             margin-bottom: 15px;
             border: 1px solid var(--border-color);
         }
-        .key-item {
+        .key-item, .request-item, .log-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -518,10 +547,9 @@
             margin: 4px 0;
             background: rgba(255,255,255,0.05);
             border-radius: 4px;
-            font-family: monospace;
             font-size: 12px;
         }
-        .key-item button {
+        .key-item button, .request-item button {
             background: none;
             border: none;
             color: var(--danger);
@@ -568,12 +596,13 @@
 </head>
 <body>
 
-<!-- ADBLOCK FULL‑PAGE OVERLAY -->
+<!-- ADBLOCK FULL‑PAGE OVERLAY (with VPN message) -->
 <div id="adblockOverlay">
     <div class="message">
-        <h2>⚠️ Ad Blocker Detected</h2>
-        <p>Please disable your ad blocker to access Steamvault Cloud. We rely on non‑intrusive ads to keep the service free.</p>
-        <p>After disabling, refresh the page.</p>
+        <h2>⚠️ Access Restricted</h2>
+        <p>We rely on non‑intrusive ads to keep the service free.</p>
+        <p><strong>If you are using an ad blocker:</strong> Please disable it and refresh the page.</p>
+        <p><strong>If you are not using an ad blocker:</strong> You may need to use a VPN to access this site from your region.</p>
     </div>
 </div>
 
@@ -600,6 +629,9 @@
 
 <!-- MAIN APP -->
 <div id="mainApp">
+    <!-- Announcement Banner -->
+    <div id="announcementBanner"></div>
+
     <div class="dashboard" id="dash">
         <div class="stat-card">
             <small id="statAccounts">Cloud Accounts</small>
@@ -619,11 +651,26 @@
             <span id="activeSessions">0</span>
             <button class="btn btn-manage" style="margin-top:10px;" onclick="forceLogoutAllGuests()">Force Logout All</button>
         </div>
+        <!-- Requests count for admins -->
+        <div class="stat-card" id="requestCountCard" style="display:none;">
+            <small>Pending Requests</small>
+            <span id="pendingRequests">0</span>
+            <button class="btn btn-manage" style="margin-top:10px;" onclick="openRequestManager()">Manage Requests</button>
+        </div>
+        <!-- Audit Logs button for head admins -->
+        <div class="stat-card" id="auditLogCard" style="display:none;">
+            <small>Audit Logs</small>
+            <button class="btn btn-manage" style="margin-top:10px;" onclick="openAuditLogs()">View Logs</button>
+        </div>
+        <!-- Announcement editor for head admins -->
+        <div class="stat-card" id="announcementCard" style="display:none;">
+            <small>Announcement</small>
+            <button class="btn btn-manage" style="margin-top:10px;" onclick="openAnnouncementEditor()">Edit</button>
+        </div>
     </div>
 
     <!-- Banner Ad Placeholder (you can replace with actual ad code) -->
     <div class="ad-banner" id="adBanner">
-        <!-- Monetag banner code can go here -->
         <div style="color: var(--text-secondary);">Advertisement</div>
     </div>
 
@@ -638,6 +685,8 @@
                 <option value="ar">🇸🇦 العربية</option>
             </select>
             <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌓 Theme</button>
+            <!-- Guest request button -->
+            <button class="btn btn-guest" id="requestBtn" style="display:none;" onclick="openRequestForm()">📝 Request Account</button>
             <!-- Admin buttons -->
             <button class="btn btn-add" id="addBtn" style="display:none;" onclick="openAddCard()">➕ Add Account</button>
             <button class="btn btn-manage" id="manageBtn" style="display:none;" onclick="openKeyManager()">🔑 Manage Keys</button>
@@ -645,8 +694,14 @@
         </div>
     </div>
 
-    <div class="search-container">
+    <div class="search-filter-container">
         <input type="text" id="searchInput" placeholder="🔍 Search by games or username..." oninput="filterCards()">
+        <div class="filter-buttons">
+            <button class="filter-btn active" data-filter="all" onclick="setCategoryFilter('all')">All</button>
+            <button class="filter-btn" data-filter="Steam" onclick="setCategoryFilter('Steam')">Steam</button>
+            <button class="filter-btn" data-filter="Xbox" onclick="setCategoryFilter('Xbox')">Xbox</button>
+            <button class="filter-btn" data-filter="Epic Games" onclick="setCategoryFilter('Epic Games')">Epic Games</button>
+        </div>
     </div>
 
     <div class="cards" id="container">
@@ -692,6 +747,7 @@
             searchPlaceholder: "🔍 Search by games or username...",
             addAccount: "➕ Add Account",
             manageKeys: "🔑 Manage Keys",
+            requestAccount: "📝 Request Account",
             close: "Close",
             cancel: "Cancel",
             upload: "Upload",
@@ -706,12 +762,17 @@
             viewCount: "Views",
             decrypting: "🔒 Decrypting...",
             seconds: "s",
-            adblockMessage: "Please disable your ad blocker to access Steamvault Cloud.",
+            adblockMessage: "Please disable your ad blocker or use a VPN to access Steamvault Cloud.",
             cooldownMessage: "Too many failed attempts. Please wait {minutes} minutes.",
             forceLogoutAll: "Force Logout All",
             activeSessions: "Active Guest Sessions",
             sessionRevoked: "Your session was revoked by an admin.",
-            adFailed: "Ad service unavailable. Please disable ad blocker or try again later."
+            adFailed: "Ad service unavailable. Please disable ad blocker or try again later.",
+            pendingRequests: "Pending Requests",
+            manageRequests: "Manage Requests",
+            auditLogs: "Audit Logs",
+            announcement: "Announcement",
+            editAnnouncement: "Edit Announcement"
         },
         ar: {
             loginTitle: "ستيم فولت كلاود",
@@ -727,6 +788,7 @@
             searchPlaceholder: "🔍 ابحث عن الألعاب أو اسم المستخدم...",
             addAccount: "➕ إضافة حساب",
             manageKeys: "🔑 إدارة المفاتيح",
+            requestAccount: "📝 طلب حساب",
             close: "إغلاق",
             cancel: "إلغاء",
             upload: "رفع",
@@ -741,34 +803,35 @@
             viewCount: "مشاهدات",
             decrypting: "🔒 جاري فك التشفير...",
             seconds: "ث",
-            adblockMessage: "الرجاء تعطيل مانع الإعلانات للوصول إلى ستيم فولت كلاود.",
+            adblockMessage: "الرجاء تعطيل مانع الإعلانات أو استخدام VPN للوصول إلى ستيم فولت كلاود.",
             cooldownMessage: "محاولات فاشلة كثيرة. الرجاء الانتظار {minutes} دقائق.",
             forceLogoutAll: "تسجيل خروج الجميع",
             activeSessions: "الجلسات النشطة",
             sessionRevoked: "تم إلغاء جلستك بواسطة المشرف.",
-            adFailed: "خدمة الإعلانات غير متاحة. الرجاء تعطيل مانع الإعلانات أو المحاولة لاحقاً."
+            adFailed: "خدمة الإعلانات غير متاحة. الرجاء تعطيل مانع الإعلانات أو المحاولة لاحقاً.",
+            pendingRequests: "الطلبات المعلقة",
+            manageRequests: "إدارة الطلبات",
+            auditLogs: "سجل المراجعة",
+            announcement: "إعلان",
+            editAnnouncement: "تعديل الإعلان"
         }
     };
     let currentLang = 'en';
 
-    // ==================== ADBLOCK DETECTION (IMPROVED) ====================
+    // ==================== ADBLOCK DETECTION ====================
     function detectAdBlockStrict() {
-        // Method 1: CSS-based detection
         const test = document.createElement('div');
         test.className = 'adsbox';
         test.style.height = '1px';
         document.body.appendChild(test);
         setTimeout(() => {
             if (test.offsetHeight === 0) {
-                // Adblock detected – block page
                 document.getElementById('adblockOverlay').style.display = 'flex';
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'none';
             } else {
-                // Method 2: Check if Monetag script loaded (by trying to fetch a resource from the same domain)
                 fetch('https://quge5.com/88/tag.min.js', { method: 'HEAD', mode: 'no-cors' })
                     .catch(() => {
-                        // If fetch fails, assume adblock
                         document.getElementById('adblockOverlay').style.display = 'flex';
                         document.getElementById('loginScreen').style.display = 'none';
                         document.getElementById('mainApp').style.display = 'none';
@@ -863,6 +926,44 @@
         return true;
     }
 
+    // ==================== TOTP FUNCTIONS (2FA) ====================
+    function base32ToBytes(base32) {
+        const base32chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+        let bits = "";
+        for (let i = 0; i < base32.length; i++) {
+            const val = base32chars.indexOf(base32.charAt(i).toUpperCase());
+            if (val === -1) continue;
+            bits += val.toString(2).padStart(5, '0');
+        }
+        const bytes = [];
+        for (let i = 0; i + 7 < bits.length; i += 8) {
+            bytes.push(parseInt(bits.substr(i, 8), 2));
+        }
+        return new Uint8Array(bytes);
+    }
+
+    function generateTOTP(secret, timeStep = 30, digits = 6) {
+        const epoch = Math.floor(Date.now() / 1000);
+        const counter = Math.floor(epoch / timeStep);
+        const counterBytes = new Uint8Array(8);
+        for (let i = 7; i >= 0; i--) {
+            counterBytes[i] = counter & 0xff;
+            counter >>= 8;
+        }
+        const key = base32ToBytes(secret);
+        const shaObj = new jsSHA("SHA-1", "UINT8ARRAY");
+        shaObj.setHMACKey(key, "UINT8ARRAY");
+        shaObj.update(counterBytes);
+        const hmac = shaObj.getHMAC("UINT8ARRAY");
+        const offset = hmac[hmac.length - 1] & 0xf;
+        const code = ((hmac[offset] & 0x7f) << 24) |
+                     ((hmac[offset + 1] & 0xff) << 16) |
+                     ((hmac[offset + 2] & 0xff) << 8) |
+                     (hmac[offset + 3] & 0xff);
+        const totp = (code % (10 ** digits)).toString().padStart(digits, '0');
+        return totp;
+    }
+
     // ==================== STATE ====================
     let state = {
         cards: [],
@@ -870,18 +971,32 @@
         headAdmins: ["21640800"],
         activeCodes: {},
         globalSessionId: 0,
-        lastUpdated: null
+        requests: [], // { id, username, category, message, userId (guest code), status, createdAt, adminResponse, accountDetails? }
+        logs: [], // { action, adminKey, timestamp, details }
+        announcement: { text: "", enabled: false, updatedAt: null },
+        twoFA: {} // key -> { secret, enabled }
     };
     let currentUser = {
         role: "Guest",
-        key: null
+        key: null,
+        twoFAPending: false // for admins needing 2FA code
     };
     let userLoginTime = null;
     let tempImage = null;
     let syncInProgress = false;
     let filteredCards = [];
+    let currentCategoryFilter = 'all';
 
-    // ==================== LANGUAGE FUNCTIONS (FIXED) ====================
+    // ==================== LANGUAGE FUNCTIONS ====================
+    function safeSetText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    }
+    function safeSetPlaceholder(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.placeholder = text;
+    }
+
     function updateTexts() {
         const t = translations[currentLang];
         safeSetText('loginTitle', t.loginTitle);
@@ -897,6 +1012,7 @@
         safeSetPlaceholder('searchInput', t.searchPlaceholder);
         safeSetText('addBtn', t.addAccount);
         safeSetText('manageBtn', t.manageKeys);
+        safeSetText('requestBtn', t.requestAccount);
         const sessionCard = document.getElementById('sessionCard');
         if (sessionCard) {
             const small = sessionCard.querySelector('small');
@@ -904,15 +1020,25 @@
             const button = sessionCard.querySelector('button');
             if (button) button.innerText = t.forceLogoutAll;
         }
-    }
-
-    function safeSetText(id, text) {
-        const el = document.getElementById(id);
-        if (el) el.innerText = text;
-    }
-    function safeSetPlaceholder(id, text) {
-        const el = document.getElementById(id);
-        if (el) el.placeholder = text;
+        const requestCard = document.getElementById('requestCountCard');
+        if (requestCard) {
+            const small = requestCard.querySelector('small');
+            if (small) small.innerText = t.pendingRequests;
+            const button = requestCard.querySelector('button');
+            if (button) button.innerText = t.manageRequests;
+        }
+        const auditCard = document.getElementById('auditLogCard');
+        if (auditCard) {
+            const small = auditCard.querySelector('small');
+            if (small) small.innerText = t.auditLogs;
+        }
+        const announceCard = document.getElementById('announcementCard');
+        if (announceCard) {
+            const small = announceCard.querySelector('small');
+            if (small) small.innerText = t.announcement;
+            const button = announceCard.querySelector('button');
+            if (button) button.innerText = t.editAnnouncement;
+        }
     }
 
     document.getElementById('langSelect').addEventListener('change', (e) => {
@@ -973,14 +1099,22 @@
                 headAdmins: data.record.headAdmins || ["21640800"],
                 activeCodes: data.record.activeCodes || {},
                 globalSessionId: data.record.globalSessionId || 0,
+                requests: data.record.requests || [],
+                logs: data.record.logs || [],
+                announcement: data.record.announcement || { text: "", enabled: false, updatedAt: null },
+                twoFA: data.record.twoFA || {},
                 lastUpdated: new Date().toISOString()
             };
             globalSessionId = state.globalSessionId;
 
             cleanupExpiredCodes();
             updateLastSync();
+            updateAnnouncementBanner();
             filterCards();
             updateSessionCard();
+            updateRequestCountCard();
+            updateAuditLogCard();
+            updateAnnouncementCard();
         } catch (e) {
             console.error('Sync failed:', e);
             document.getElementById('container').innerHTML = '<div style="text-align:center; padding:50px; color:var(--danger);">Failed to load data. Refresh.</div>';
@@ -1019,7 +1153,11 @@
                 admins: state.admins,
                 headAdmins: state.headAdmins,
                 activeCodes: latest.activeCodes || {},
-                globalSessionId: state.globalSessionId
+                globalSessionId: state.globalSessionId,
+                requests: state.requests,
+                logs: state.logs,
+                announcement: state.announcement,
+                twoFA: state.twoFA
             };
 
             const res = await fetch(`${CONFIG.API_URL}/b/${CONFIG.BIN_ID}`, {
@@ -1038,6 +1176,21 @@
         }
     }
 
+    // ==================== LOGGING ====================
+    function addLog(action, details = '') {
+        if (!currentUser.key || (currentUser.role !== 'Admin' && currentUser.role !== 'HeadAdmin')) return;
+        const logEntry = {
+            action,
+            adminKey: currentUser.key,
+            timestamp: new Date().toISOString(),
+            details
+        };
+        state.logs.unshift(logEntry);
+        // Keep logs limited (last 100)
+        if (state.logs.length > 100) state.logs.pop();
+        syncCloud(); // optionally, could sync later
+    }
+
     // ==================== UI RENDERING ====================
     function showSkeletons() {
         const container = document.getElementById('container');
@@ -1054,12 +1207,22 @@
         container.innerHTML = skeletons;
     }
 
+    function setCategoryFilter(category) {
+        currentCategoryFilter = category;
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === category);
+        });
+        filterCards();
+    }
+
     function filterCards() {
         const query = document.getElementById('searchInput').value.toLowerCase();
-        filteredCards = state.cards.filter(card =>
-            (card.description && card.description.toLowerCase().includes(query)) ||
-            card.username.toLowerCase().includes(query)
-        );
+        filteredCards = state.cards.filter(card => {
+            const matchesSearch = (card.description && card.description.toLowerCase().includes(query)) ||
+                                  card.username.toLowerCase().includes(query);
+            const matchesCategory = currentCategoryFilter === 'all' || card.category === currentCategoryFilter;
+            return matchesSearch && matchesCategory;
+        });
         renderCards();
     }
 
@@ -1109,6 +1272,45 @@
             document.getElementById('activeSessions').innerText = state.globalSessionId;
         } else {
             sessionCard.style.display = 'none';
+        }
+    }
+
+    function updateRequestCountCard() {
+        const requestCard = document.getElementById('requestCountCard');
+        if (currentUser.role === 'Admin' || currentUser.role === 'HeadAdmin') {
+            const pending = state.requests.filter(r => r.status === 'pending').length;
+            requestCard.style.display = 'block';
+            document.getElementById('pendingRequests').innerText = pending;
+        } else {
+            requestCard.style.display = 'none';
+        }
+    }
+
+    function updateAuditLogCard() {
+        const auditCard = document.getElementById('auditLogCard');
+        if (currentUser.role === 'HeadAdmin') {
+            auditCard.style.display = 'block';
+        } else {
+            auditCard.style.display = 'none';
+        }
+    }
+
+    function updateAnnouncementCard() {
+        const announceCard = document.getElementById('announcementCard');
+        if (currentUser.role === 'HeadAdmin') {
+            announceCard.style.display = 'block';
+        } else {
+            announceCard.style.display = 'none';
+        }
+    }
+
+    function updateAnnouncementBanner() {
+        const banner = document.getElementById('announcementBanner');
+        if (state.announcement && state.announcement.enabled && state.announcement.text) {
+            banner.innerText = state.announcement.text;
+            banner.style.display = 'block';
+        } else {
+            banner.style.display = 'none';
         }
     }
 
@@ -1163,20 +1365,56 @@
             rateLimit.addAttempt('admin');
             return alert('Please enter a key.');
         }
-        if (state.headAdmins.includes(key)) {
-            rateLimit.reset('admin');
-            currentUser = { role: "HeadAdmin", key };
-            enableApp(true);
-            closePop();
-        } else if (state.admins.includes(key)) {
-            rateLimit.reset('admin');
-            currentUser = { role: "Admin", key };
-            enableApp(false);
-            closePop();
+        // Check if it's a head admin or admin
+        if (state.headAdmins.includes(key) || state.admins.includes(key)) {
+            // Check 2FA
+            if (state.twoFA[key] && state.twoFA[key].enabled) {
+                // Store key temporarily and ask for 2FA code
+                currentUser.twoFAPending = key;
+                document.getElementById('popup').innerHTML = `
+                    <h2>🔐 Two-Factor Authentication</h2>
+                    <p>Enter the 6-digit code from your authenticator app.</p>
+                    <input type="text" id="twoFACode" placeholder="000000" maxlength="6" autocomplete="off">
+                    <button class="btn btn-admin" style="width:100%; margin-bottom:10px;" onclick="verify2FA()">Verify</button>
+                    <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">Cancel</button>
+                `;
+                return;
+            } else {
+                // No 2FA, proceed
+                finalizeAdminLogin(key);
+            }
         } else {
             rateLimit.addAttempt('admin');
             alert('Invalid admin key.');
         }
+    }
+
+    function verify2FA() {
+        const code = document.getElementById('twoFACode')?.value.trim();
+        if (!code || code.length !== 6) return alert('Please enter a 6-digit code.');
+        const key = currentUser.twoFAPending;
+        const secret = state.twoFA[key].secret;
+        const expected = generateTOTP(secret);
+        if (code === expected) {
+            finalizeAdminLogin(key);
+        } else {
+            rateLimit.addAttempt('admin');
+            alert('Invalid 2FA code.');
+        }
+    }
+
+    function finalizeAdminLogin(key) {
+        rateLimit.reset('admin');
+        if (state.headAdmins.includes(key)) {
+            currentUser = { role: "HeadAdmin", key, twoFAPending: false };
+            addLog('Admin login', `Head admin ${key} logged in`);
+            enableApp(true);
+        } else {
+            currentUser = { role: "Admin", key, twoFAPending: false };
+            addLog('Admin login', `Admin ${key} logged in`);
+            enableApp(false);
+        }
+        closePop();
     }
 
     function verifyGuest() {
@@ -1221,6 +1459,7 @@
         document.getElementById('logoutBtn').style.display = "inline-flex";
         if (currentUser.role === "Admin" || currentUser.role === "HeadAdmin") {
             document.getElementById('addBtn').style.display = "inline-flex";
+            document.getElementById('requestBtn').style.display = "none"; // admins don't request
             if (isHead) {
                 document.getElementById('manageBtn').style.display = "inline-flex";
             } else {
@@ -1229,21 +1468,33 @@
         } else {
             document.getElementById('addBtn').style.display = "none";
             document.getElementById('manageBtn').style.display = "none";
+            document.getElementById('requestBtn').style.display = "inline-flex";
         }
         updateStats();
         updateSessionCard();
+        updateRequestCountCard();
+        updateAuditLogCard();
+        updateAnnouncementCard();
+        updateAnnouncementBanner();
     }
 
     function logout() {
-        currentUser = { role: "Guest", key: null };
+        if (currentUser.role === 'Admin' || currentUser.role === 'HeadAdmin') {
+            addLog('Admin logout', `${currentUser.key} logged out`);
+        }
+        currentUser = { role: "Guest", key: null, twoFAPending: false };
         userLoginTime = null;
         localStorage.removeItem('guestSessionId');
         document.getElementById('mainApp').style.display = 'none';
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('addBtn').style.display = "none";
         document.getElementById('manageBtn').style.display = "none";
+        document.getElementById('requestBtn').style.display = "none";
         document.getElementById('logoutBtn').style.display = "none";
         document.getElementById('sessionCard').style.display = 'none';
+        document.getElementById('requestCountCard').style.display = 'none';
+        document.getElementById('auditLogCard').style.display = 'none';
+        document.getElementById('announcementCard').style.display = 'none';
         closePop();
     }
 
@@ -1253,6 +1504,7 @@
         await incrementGlobalSessionId();
         state.globalSessionId = globalSessionId;
         updateSessionCard();
+        addLog('Force logout all guests', `Global session ID incremented to ${globalSessionId}`);
         alert('All guests have been logged out.');
     }
 
@@ -1339,6 +1591,7 @@
         const health = document.getElementById('editHealth')?.value;
         if (category) state.cards[index].category = category;
         if (health) state.cards[index].health = health;
+        addLog('Account updated', `${state.cards[index].username} (${category}, ${health})`);
         syncCloud();
         closePop();
     }
@@ -1411,6 +1664,7 @@
         state.cards.unshift(newCard);
         tempImage = null;
         closePop();
+        addLog('Account added', `${username} (${category})`);
         await syncCloud();
         sendDiscordWebhook(newCard);
     }
@@ -1441,30 +1695,205 @@
 
     async function deleteCard(index) {
         if (!confirm('Delete forever?')) return;
+        const deleted = state.cards[index];
         state.cards.splice(index, 1);
+        addLog('Account deleted', `${deleted.username}`);
         closePop();
         await syncCloud();
     }
 
-    // ==================== KEY MANAGER ====================
+    // ==================== ACCOUNT REQUEST SYSTEM ====================
+    function openRequestForm() {
+        if (currentUser.role !== 'User') return alert('Only guests can request accounts.');
+        const t = translations[currentLang];
+        const categoryOptions = CONFIG.CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        document.getElementById('popup').innerHTML = `
+            <h2>${t.requestAccount}</h2>
+            <p>Tell us which game or category you need.</p>
+            <input type="text" id="requestUsername" placeholder="Desired account name (optional)">
+            <select id="requestCategory">
+                ${categoryOptions}
+            </select>
+            <textarea id="requestMessage" placeholder="Additional details..." rows="3"></textarea>
+            <button class="btn btn-guest" style="width:100%; margin-bottom:10px;" onclick="submitRequest()">Submit Request</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
+        showPop();
+    }
+
+    function submitRequest() {
+        const desiredUsername = document.getElementById('requestUsername')?.value.trim();
+        const category = document.getElementById('requestCategory')?.value;
+        const message = document.getElementById('requestMessage')?.value.trim();
+        if (!category) return alert('Please select a category.');
+
+        const request = {
+            id: Date.now().toString(),
+            username: desiredUsername || 'Not specified',
+            category,
+            message: message || 'No additional details',
+            userId: currentUser.key,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            adminResponse: null
+        };
+        state.requests.push(request);
+        addLog('Account request submitted', `By guest ${currentUser.key} for ${category}`);
+        syncCloud();
+        closePop();
+        alert('Request submitted! An admin will review it.');
+    }
+
+    function openRequestManager() {
+        if (!['Admin','HeadAdmin'].includes(currentUser.role)) return alert('Admins only.');
+        const pending = state.requests.filter(r => r.status === 'pending');
+        const t = translations[currentLang];
+        let html = `<h2>${t.manageRequests}</h2>`;
+        if (pending.length === 0) {
+            html += '<p>No pending requests.</p>';
+        } else {
+            html += '<div class="request-list">';
+            pending.forEach(req => {
+                html += `
+                    <div class="request-item">
+                        <div><strong>${req.username}</strong> (${req.category})<br>${req.message}<br><small>by ${req.userId}</small></div>
+                        <div>
+                            <button class="btn btn-success" onclick="approveRequest('${req.id}')">✅ Approve</button>
+                            <button class="btn btn-danger" onclick="denyRequest('${req.id}')">❌ Deny</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        document.getElementById('popup').innerHTML = html;
+        showPop();
+    }
+
+    function approveRequest(id) {
+        const req = state.requests.find(r => r.id === id);
+        if (!req) return;
+        // Ask admin to provide account details
+        document.getElementById('popup').innerHTML = `
+            <h2>Approve Request</h2>
+            <p>Provide the account details for ${req.username} (${req.category})</p>
+            <input type="text" id="approveUsername" placeholder="Username" value="${req.username !== 'Not specified' ? req.username : ''}">
+            <input type="text" id="approvePassword" placeholder="Password">
+            <textarea id="approveDescription" placeholder="Games / description">${req.message}</textarea>
+            <button class="btn btn-success" style="width:100%; margin-bottom:10px;" onclick="submitApproval('${req.id}')">Create Account</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="openRequestManager()">Back</button>
+        `;
+    }
+
+    function submitApproval(id) {
+        const username = document.getElementById('approveUsername')?.value.trim();
+        const password = document.getElementById('approvePassword')?.value.trim();
+        const description = document.getElementById('approveDescription')?.value.trim();
+        if (!username || !password) return alert('Username and password required.');
+
+        const req = state.requests.find(r => r.id === id);
+        if (!req) return;
+
+        // Create new account
+        const newCard = {
+            username,
+            password,
+            description: description || req.message,
+            category: req.category,
+            health: 'Good',
+            views: 0,
+            image: null,
+            addedBy: currentUser.key,
+            addedAt: new Date().toISOString()
+        };
+        state.cards.unshift(newCard);
+
+        // Update request status
+        req.status = 'approved';
+        req.adminResponse = { approvedBy: currentUser.key, at: new Date().toISOString(), accountUsername: username };
+
+        addLog('Request approved', `Request ${id} for ${username}`);
+        syncCloud();
+        closePop();
+        alert('Request approved and account added.');
+    }
+
+    function denyRequest(id) {
+        const req = state.requests.find(r => r.id === id);
+        if (!req) return;
+        req.status = 'denied';
+        addLog('Request denied', `Request ${id}`);
+        syncCloud();
+        openRequestManager(); // refresh
+    }
+
+    // ==================== KEY MANAGER (with 2FA) ====================
     function openKeyManager() {
         if (currentUser.role !== "HeadAdmin") return alert('Head Admin only.');
         const t = translations[currentLang];
+        // Generate 2FA secret for a new admin if needed
         document.getElementById('popup').innerHTML = `
             <h2>🔑 ${t.manageKeys}</h2>
             <div class="key-manager">
                 <h4>Admins (${state.admins.length})</h4>
-                <div class="key-list">${state.admins.map(k => `<div class="key-item"><span>${k}</span>${state.admins.length>1?`<button onclick="removeKey('admins','${k}')">✖</button>`:'<span>(min)</span>'}</div>`).join('')}</div>
+                <div class="key-list">
+                    ${state.admins.map(k => `
+                        <div class="key-item">
+                            <span>${k}</span>
+                            <span>
+                                ${state.twoFA[k] && state.twoFA[k].enabled ? '🔐' : '🔓'}
+                                <button onclick="toggle2FA('${k}')">Toggle 2FA</button>
+                                ${state.admins.length>1?`<button onclick="removeKey('admins','${k}')">✖</button>`:'<span>(min)</span>'}
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
                 <input id="newAdminKey" placeholder="New admin key"><button class="btn btn-admin" style="width:100%; margin-top:10px;" onclick="addKey('admins')">Add</button>
             </div>
             <div class="key-manager">
                 <h4>Head Admins (${state.headAdmins.length})</h4>
-                <div class="key-list">${state.headAdmins.map(k => `<div class="key-item"><span>${k}</span>${state.headAdmins.length>1?`<button onclick="removeKey('headAdmins','${k}')">✖</button>`:'<span>(min)</span>'}</div>`).join('')}</div>
+                <div class="key-list">
+                    ${state.headAdmins.map(k => `
+                        <div class="key-item">
+                            <span>${k}</span>
+                            <span>
+                                ${state.twoFA[k] && state.twoFA[k].enabled ? '🔐' : '🔓'}
+                                <button onclick="toggle2FA('${k}')">Toggle 2FA</button>
+                                ${state.headAdmins.length>1?`<button onclick="removeKey('headAdmins','${k}')">✖</button>`:'<span>(min)</span>'}
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
                 <input id="newHeadKey" placeholder="New head admin key"><button class="btn" style="width:100%; background:var(--head); color:#000;" onclick="addKey('headAdmins')">Add</button>
             </div>
             <button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>
         `;
         showPop();
+    }
+
+    function toggle2FA(key) {
+        if (!state.twoFA[key]) {
+            // Generate a new secret
+            const secret = generateBase32Secret();
+            state.twoFA[key] = { secret, enabled: true };
+            // Show QR code (simplified – show secret)
+            alert(`Scan this secret in Google Authenticator:\n${secret}\n(For testing, you can enter the code manually.)`);
+        } else {
+            state.twoFA[key].enabled = !state.twoFA[key].enabled;
+        }
+        addLog('2FA toggled', `Key ${key} now ${state.twoFA[key].enabled ? 'enabled' : 'disabled'}`);
+        syncCloud();
+        openKeyManager(); // refresh
+    }
+
+    function generateBase32Secret(length = 16) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        let secret = '';
+        for (let i = 0; i < length; i++) {
+            secret += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return secret;
     }
 
     async function addKey(type) {
@@ -1473,6 +1902,7 @@
         if (!val) return alert('Enter a key.');
         if (state[type].includes(val)) return alert('Already exists.');
         state[type].push(val);
+        addLog('Key added', `${type} key ${val}`);
         await syncCloud();
         openKeyManager();
     }
@@ -1481,8 +1911,52 @@
         if (state[type].length <= 1) return alert('Cannot remove last key.');
         if (!confirm('Remove this key?')) return;
         state[type] = state[type].filter(k => k !== key);
+        addLog('Key removed', `${type} key ${key}`);
         await syncCloud();
         openKeyManager();
+    }
+
+    // ==================== AUDIT LOGS ====================
+    function openAuditLogs() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        let html = `<h2>${t.auditLogs}</h2>`;
+        if (state.logs.length === 0) {
+            html += '<p>No logs yet.</p>';
+        } else {
+            html += '<div class="log-list">';
+            state.logs.slice(0, 50).forEach(log => {
+                html += `<div class="log-item"><small>${new Date(log.timestamp).toLocaleString()}</small> <strong>${log.action}</strong> by ${log.adminKey} ${log.details ? '- ' + log.details : ''}</div>`;
+            });
+            html += '</div>';
+        }
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#475569;" onclick="closePop()">${t.close}</button>`;
+        document.getElementById('popup').innerHTML = html;
+        showPop();
+    }
+
+    // ==================== ANNOUNCEMENT EDITOR ====================
+    function openAnnouncementEditor() {
+        if (currentUser.role !== 'HeadAdmin') return;
+        const t = translations[currentLang];
+        document.getElementById('popup').innerHTML = `
+            <h2>${t.editAnnouncement}</h2>
+            <textarea id="announceText" rows="3" placeholder="Announcement text">${state.announcement.text || ''}</textarea>
+            <label><input type="checkbox" id="announceEnabled" ${state.announcement.enabled ? 'checked' : ''}> Enable banner</label>
+            <button class="btn btn-admin" style="width:100%; margin:10px 0;" onclick="saveAnnouncement()">Save</button>
+            <button class="btn" style="width:100%; background:#475569;" onclick="closePop()">${t.cancel}</button>
+        `;
+        showPop();
+    }
+
+    function saveAnnouncement() {
+        const text = document.getElementById('announceText')?.value.trim();
+        const enabled = document.getElementById('announceEnabled')?.checked;
+        state.announcement = { text, enabled, updatedAt: new Date().toISOString() };
+        addLog('Announcement updated', text);
+        syncCloud();
+        updateAnnouncementBanner();
+        closePop();
     }
 
     // ==================== UTILITIES ====================
